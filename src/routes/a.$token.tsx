@@ -407,8 +407,7 @@ interface StepItem {
 const ONBOARDING_STEPS: StepItem[] = [
   { id: 1, label: "Welcome", desc: "Overview of your assignment" },
   { id: 2, label: "Rules & Timing", desc: "Duration & expectations" },
-  { id: 3, label: "Git Coordinates", desc: "Your unique branch" },
-  { id: 4, label: "Terms & Agreement", desc: "Agree to start" },
+  { id: 3, label: "Terms & Agreement", desc: "Agree to start" },
 ];
 
 function QuestionPage({
@@ -547,35 +546,8 @@ function QuestionPage({
               </div>
             )}
 
-            {/* STEP 3: Git Coordinates */}
+            {/* STEP 3: Terms and Conditions */}
             {activeStep === 3 && (
-              <div className="space-y-4 animate-in fade-in duration-200">
-                <h3 className="text-xl font-bold tracking-tight text-foreground">Your Dedicated Branch</h3>
-                <p className="text-[14px] leading-relaxed text-foreground/80 font-light">
-                  All work must be pushed to a specific unique candidate branch in the repository. Submissions to any other branch will not be detected.
-                </p>
-
-                <div className="mt-6 border-l-4 border-l-sky-500 bg-sky-500/5 px-5 py-4 rounded-r-xl">
-                  <h4 className="text-[11.5px] font-bold tracking-wider text-sky-700 dark:text-sky-400 uppercase">Dedicated Branch</h4>
-                  <p className="mt-1 text-[13px] text-foreground">
-                    Your unique branch will be generated for your email: <strong>{preview.email}</strong>.
-                  </p>
-                  
-                  {preview.email && preview.candidateId && (
-                    <div className="mt-3 rounded-lg border border-border bg-background p-3 font-mono text-[12px] text-foreground/90 space-y-1">
-                      <p className="text-muted-foreground"># Your unique branch format:</p>
-                      <p className="font-semibold text-sky-700 dark:text-sky-400">{getCandidateBranch(preview.email, preview.candidateId)}</p>
-                    </div>
-                  )}
-                  <p className="mt-3.5 text-[11.5px] text-muted-foreground">
-                    🔒 The GitHub repository and exact Git push commands are currently blurred on your HUD. They will automatically unlock as soon as your timer begins.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Terms and Conditions */}
-            {activeStep === 4 && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 <h3 className="text-xl font-bold tracking-tight text-foreground">Accept Terms & Start</h3>
                 <p className="text-[14px] leading-relaxed text-foreground/80 font-light">
@@ -585,7 +557,7 @@ function QuestionPage({
                 <div className="mt-6 rounded-xl bg-amber-500/10 p-5 border border-amber-500/30">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">🚨 Critical Warning</h4>
                   <p className="text-[13px] leading-relaxed text-amber-700 dark:text-amber-400 font-medium mt-1">
-                    Once you click "Accept & Start Timer", your {preview.durationHours}-hour timer will begin. The timer is server-authoritative and **cannot be paused or reset** under any circumstances.
+                    Once you click "Accept & Start Timer", your {preview.durationHours}-hour timer will begin immediately. The timer is server-authoritative and **cannot be paused or reset** under any circumstances.
                   </p>
                 </div>
 
