@@ -19,7 +19,7 @@ export const resolveAuthDestination = createServerFn({ method: "POST" })
     const email = ((context.claims as Record<string, unknown>)["email"] as string | undefined)?.toLowerCase() ?? null;
 
     // ── 1. Check if this user already has the admin role ──────────────────
-    const { data: roleRow } = await (context.supabase as any)
+    const { data: roleRow } = await supabaseAdmin
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
