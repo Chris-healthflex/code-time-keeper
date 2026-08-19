@@ -248,24 +248,23 @@ function InteractiveBrief({ text }: { text: string }) {
   const step = HIW_STEPS[active]!;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-12 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 lg:gap-8 items-start">
 
-      {/* ── Left column ── */}
-      <div className="flex flex-col gap-6">
+      {/* ── Left column: step navigator ── */}
+      <div className="flex flex-col gap-5">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground leading-snug">
-            Build a clinical AI pipeline<br />
-            <span className="bg-gradient-to-r from-sky-500 to-primary bg-clip-text text-transparent">
-              in four focused steps.
-            </span>
+          <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-sky-500 dark:text-sky-400 mb-2">
+            Four sections
+          </p>
+          <h2 className="text-[22px] font-bold tracking-tight text-foreground leading-tight">
+            Build a clinical AI pipeline, step by step.
           </h2>
-          <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground font-light max-w-sm">
-            Stance Health runs the same evaluation sequence for every intern: visible problem breakdown, enforced tech stack, and a single scored submission.
+          <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted-foreground">
+            Read each section before the clock runs out.
           </p>
         </div>
 
-        {/* Numbered step list with sliding indicator */}
-        <ol className="relative flex flex-col gap-1">
+        <ol className="flex flex-col gap-0.5 mt-1">
           {HIW_STEPS.map((s, idx) => {
             const isActive = idx === active;
             return (
@@ -273,97 +272,75 @@ function InteractiveBrief({ text }: { text: string }) {
                 <button
                   type="button"
                   onClick={() => setActive(idx)}
-                  className={`w-full text-left rounded-xl px-4 py-3.5 transition-all duration-200 cursor-pointer group
+                  className={`w-full text-left rounded-lg px-3.5 py-3 transition-all duration-150 cursor-pointer group flex items-center justify-between gap-2
                     ${isActive
-                      ? "bg-secondary/70 border border-border/60 shadow-sm"
-                      : "hover:bg-secondary/35 border border-transparent"
+                      ? "bg-sky-500/10 dark:bg-sky-500/10 border border-sky-500/20 shadow-sm"
+                      : "hover:bg-secondary/40 border border-transparent"
                     }`}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={`text-[11px] font-bold tabular-nums shrink-0 transition-colors ${isActive ? "text-primary" : "text-muted-foreground/60"}`}>
-                        {s.num}
-                      </span>
-                      <span className={`text-[13.5px] font-semibold truncate transition-colors ${isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`}>
-                        {s.icon} {s.label}
-                      </span>
-                    </div>
-                    <span className={`text-[11px] font-medium shrink-0 transition-colors ${isActive ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
-                      {s.badge}
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className={`text-[10px] font-bold tabular-nums shrink-0 w-5 transition-colors ${isActive ? "text-sky-500 dark:text-sky-400" : "text-muted-foreground/40"}`}>
+                      {s.num}
+                    </span>
+                    <span className={`text-[13px] font-semibold truncate transition-colors ${isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground/80"}`}>
+                      {s.icon} {s.label}
                     </span>
                   </div>
-
-                  {/* Expanded description for active step */}
-                  {isActive && (
-                    <p className="mt-2 ml-[26px] text-[12.5px] leading-relaxed text-muted-foreground animate-in fade-in slide-in-from-top-1 duration-200">
-                      {s.content.split("\n")[0]}
-                    </p>
-                  )}
+                  <span className={`text-[10.5px] font-medium shrink-0 transition-colors ${isActive ? "text-sky-500/70 dark:text-sky-400/70" : "text-muted-foreground/35"}`}>
+                    {s.badge}
+                  </span>
                 </button>
               </li>
             );
           })}
         </ol>
 
-        <p className="text-[12px] text-muted-foreground/60 pl-1">
-          Timer is server-authoritative — read each section carefully before the clock expires.
-        </p>
-      </div>
-
-      {/* ── Right column: animated detail panel ── */}
-      <div
-        key={active}
-        className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-300"
-      >
-        {/* Panel header */}
-        <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5 bg-secondary/20">
-          <span className="text-[10.5px] font-bold uppercase tracking-widest text-muted-foreground">
-            Problem Statement
-          </span>
-          <span className="text-[11px] font-semibold text-muted-foreground">
-            Step {active + 1} of {HIW_STEPS.length}
-          </span>
-        </div>
-
-        {/* Panel body */}
-        <div className="p-5 sm:p-6 space-y-4">
-          {/* Step title chip */}
-          <div className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-secondary/40 px-3 py-1.5">
-            <span className="text-base">{step.icon}</span>
-            <span className="text-[12px] font-semibold text-foreground">{step.title}</span>
-          </div>
-
-          {/* Key points list */}
-          <ul className="space-y-2.5 mt-1">
-            {step.bullets.map((b, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-[13px] leading-snug text-foreground/85">
-                <span className="mt-[4px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 ring-4 ring-primary/10" />
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-
-          {/* Divider */}
-          <div className="border-t border-border/40 pt-4">
-            <ProblemStatement text={step.content} />
-          </div>
-        </div>
-
-        {/* Panel footer — progress dots */}
-        <div className="flex items-center gap-1.5 px-5 py-3 border-t border-border/40 bg-secondary/10">
+        {/* Progress dots */}
+        <div className="flex items-center gap-1.5 px-1">
           {HIW_STEPS.map((_, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setActive(i)}
-              className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
-                i === active ? "w-5 bg-primary" : "w-1.5 bg-border hover:bg-muted-foreground/40"
+              className={`h-1 rounded-full transition-all duration-200 cursor-pointer ${
+                i === active ? "w-6 bg-sky-500" : "w-1.5 bg-border/60 hover:bg-muted-foreground/30"
               }`}
             />
           ))}
-          <span className="ml-auto text-[11px] text-muted-foreground/60 font-medium">
-            {active < HIW_STEPS.length - 1 ? `${HIW_STEPS.length - active - 1} more section${HIW_STEPS.length - active - 1 > 1 ? "s" : ""}` : "All sections read"}
+          <span className="ml-auto text-[10.5px] text-muted-foreground/50 font-medium">
+            {active + 1} / {HIW_STEPS.length}
           </span>
+        </div>
+      </div>
+
+      {/* ── Right column: animated detail panel ── */}
+      <div
+        key={active}
+        className="rounded-xl border border-border/70 bg-card/60 dark:bg-card/40 backdrop-blur-sm shadow-md overflow-hidden animate-in fade-in slide-in-from-right-2 duration-250"
+      >
+        {/* Step header bar */}
+        <div className="flex items-center gap-3 border-b border-border/50 px-5 py-3.5 bg-secondary/15">
+          <span className="text-lg leading-none">{step.icon}</span>
+          <span className="text-[13px] font-semibold text-foreground tracking-tight">{step.title}</span>
+          <span className="ml-auto text-[10.5px] font-medium text-muted-foreground/60 shrink-0">
+            Step {active + 1} of {HIW_STEPS.length}
+          </span>
+        </div>
+
+        {/* Key bullets + full content */}
+        <div className="p-5 sm:p-6 space-y-5">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+            {step.bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-2 text-[12.5px] leading-snug text-foreground/80">
+                <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500/70 ring-[3px] ring-sky-500/10" />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="border-t border-border/40 pt-4">
+            <ProblemStatement text={step.content} />
+          </div>
         </div>
       </div>
     </div>
@@ -672,7 +649,7 @@ function TimedPage({
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mx-auto max-w-5xl px-6 py-10">
         {/* Glowing Dashboard Timer HUD */}
         <div
           className={`mb-10 rounded-2xl border px-6 py-5 shadow-lg transition-all duration-500 ${

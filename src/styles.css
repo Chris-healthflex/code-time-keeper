@@ -96,8 +96,8 @@
   --sidebar-border: oklch(0.92 0 0);
   --sidebar-ring: oklch(0.4 0 0);
 
-  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Fira Code", ui-monospace, monospace;
   --glow-cta: 0 0 0 1px oklch(0.15 0 0), 0 10px 30px -8px oklch(0.15 0 0 / 45%);
   --gradient-cta: linear-gradient(
     100deg,
