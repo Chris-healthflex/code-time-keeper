@@ -1,10 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import logoWhite from "@/assets/logo-white.png";
-import { lazy, Suspense } from "react";
+import { useState, useEffect, type ComponentType } from "react";
 
-const HeroFuturistic = lazy(() =>
-  import("@/components/ui/hero-futuristic").then((m) => ({ default: m.HeroFuturistic }))
-);
+// Dynamic import inside useEffect — the ONLY pattern that guarantees the module
+// (and its postprocessing/three deps) is never evaluated during SSR.
+// React.lazy still lets Vite bundle the module into the server entry and evaluate
+// it at load time; useEffect never runs on the server.
+function ClientOnlyHero() {
+  const [Hero, setHero] = useState<ComponentType | null>(null);
+
+  useEffect(() => {
+    import("@/components/ui/hero-futuristic").then((m) => {
+      setHero(() => m.HeroFuturistic);
+    });
+  }, []);
+
+  if (!Hero) return <div className="h-svh bg-black" />;
+  return <Hero />;
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -47,9 +60,7 @@ function Landing() {
     <main className="relative min-h-screen overflow-hidden bg-black">
       {/* Hero with navbar floating on top of it */}
       <div className="relative">
-        <Suspense fallback={<div className="h-svh bg-black" />}>
-          <HeroFuturistic />
-        </Suspense>
+        <ClientOnlyHero />
 
         {/* Navbar floats over the hero */}
         <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-center gap-8 py-6 text-[13px] text-white/70">
