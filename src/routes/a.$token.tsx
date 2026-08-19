@@ -30,15 +30,6 @@ function formatRemaining(ms: number): string {
   return `${hh}:${mm}:${ss}`;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-8 border-t border-border/60 pt-6">
-      <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
-      <div className="mt-3">{children}</div>
-    </section>
-  );
-}
-
 // ─── Shared Theme Toggle Button ───
 
 function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTheme: () => void }) {
@@ -175,7 +166,20 @@ function ClientOnlyHero({ email, onStart }: { email: string | undefined; onStart
   );
 }
 
-// ─── Pre-start assignment instructions panel (with Terms Popup) ──────────────────────
+// ─── Multi-step Onboarding vertical stepper (after "let's dive in" is clicked) ──────────────────────
+
+interface StepItem {
+  id: number;
+  label: string;
+  desc: string;
+}
+
+const ONBOARDING_STEPS: StepItem[] = [
+  { id: 1, label: "Welcome", desc: "Overview of your assignment" },
+  { id: 2, label: "Rules & Timing", desc: "Duration & expectations" },
+  { id: 3, label: "Git Coordinates", desc: "Your unique branch" },
+  { id: 4, label: "Terms & Agreement", desc: "Agree to start" },
+];
 
 function QuestionPage({
   preview,
@@ -190,13 +194,16 @@ function QuestionPage({
   theme: "light" | "dark";
   toggleTheme: () => void;
 }) {
-  const [showTerms, setShowTerms] = useState(false);
-  const [accepted, setAccepted] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const nextStep = () => setActiveStep((prev) => Math.min(ONBOARDING_STEPS.length, prev + 1));
+  const prevStep = () => setActiveStep((prev) => Math.max(1, prev - 1));
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
+    <main className="min-h-screen bg-background flex flex-col">
+      <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md sticky top-0 z-40">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
           <img src={logoWhite} alt="Stance Health" className="h-7 w-auto" />
           <div className="flex items-center gap-4">
             <span className="text-[12px] text-muted-foreground">{preview.email}</span>
@@ -205,134 +212,203 @@ function QuestionPage({
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl px-6 py-10">
-        {/* Callout */}
-        <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/5 px-5 py-4 shadow-sm animate-pulse">
-          <p className="text-[13px] font-medium text-amber-700 dark:text-amber-400">
-            ⏱ Your {preview.durationHours}-hour clock starts only after clicking{" "}
-            <span className="font-semibold">Reveal Question</span> and accepting terms. Read the instructions first.
-          </p>
-        </div>
-
-        {/* Title */}
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          {preview.title}
-        </h1>
-
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-[13px]">
-          <span className="rounded-full border border-border bg-secondary/60 px-3 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-            {preview.durationHours}h timed
-          </span>
-          <span className="text-muted-foreground font-medium">Submit to:</span>
-          <span className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-muted-foreground select-none filter blur-[3.5px]">
-            github.com/Chris-healthflex/ai-intern
-          </span>
-        </div>
-
-        {/* Unique Branch Blurring Instructions */}
-        {preview.email && preview.candidateId && (
-          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-5 sm:px-8 shadow-sm">
-            <h3 className="text-[13px] font-semibold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
-              Your Unique Branch
-            </h3>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground">
-              Your dedicated candidate branch is currently locked:
-            </p>
-            <div className="mt-3 select-none filter blur-[4px] rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto">
-              <p># Your unique branch: candidate/chris-thomas-healthflex-in-e419</p>
-              <p># How to push to your branch:</p>
-              <p>git checkout -b candidate/chris-thomas-healthflex-in-e419</p>
-            </div>
-            <p className="mt-3 text-[12px] text-muted-foreground">
-              🔒 GitHub repository and branch details are blurred. They will unlock when your assignment timer is complete or when your admin manually unblurs them.
-            </p>
+      {/* Onboarding 2: Two-column layout with vertical rail and form body */}
+      <div className="flex-1 max-w-5xl w-full mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-10 px-6 py-10 overflow-hidden">
+        
+        {/* Left Side Labelled Rail */}
+        <aside className="space-y-6 flex flex-col justify-start">
+          <div>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Setup Checklist</h2>
+            <p className="text-[12px] text-muted-foreground mt-1">Complete each step below to unlock and reveal the assignment question.</p>
           </div>
-        )}
 
-        {/* Deliverables reminder */}
-        <Section title="Before you start">
-          <ul className="space-y-3.5 mt-4">
-            {[
-              "Read the full brief above carefully — the clock starts when you reveal the question.",
-              `You have ${preview.durationHours} hours from that moment. After time is up, you have a 10-minute grace window to push your final commit.`,
-              `Push your code to your unique branch. Pushes to main or other branches will not be recognized.`,
-              "Do not close this tab during the assignment — it polls the server and keeps your session alive.",
-            ].map((t, i) => (
-              <li key={i} className="flex gap-3 text-[14px] leading-relaxed text-foreground/90 font-light">
-                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-border bg-secondary/40 text-[10px] font-bold text-muted-foreground">
-                  {i + 1}
-                </span>
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-        </Section>
+          <nav className="relative flex flex-col gap-6 pl-2 mt-4">
+            {/* Connecting Line */}
+            <div className="absolute left-[17px] top-2 bottom-8 w-0.5 bg-border/70" />
 
-        {/* CTA */}
-        <div className="mt-12 flex flex-col items-center gap-3">
-          <button
-            onClick={() => setShowTerms(true)}
-            className="cta-glow flex min-w-[280px] items-center justify-center gap-2 rounded-full py-3.5 text-[14px] font-bold tracking-wide transition-opacity hover:opacity-90 cursor-pointer"
-          >
-            Reveal Question →
-          </button>
-          <p className="text-[11px] text-muted-foreground font-medium">
-            Timer is server-side and cannot be paused or reset.
-          </p>
+            {ONBOARDING_STEPS.map((s) => {
+              const isCompleted = activeStep > s.id;
+              const isActive = activeStep === s.id;
+              return (
+                <div key={s.id} className="relative flex items-start gap-4">
+                  {/* Step bubble */}
+                  <div
+                    className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border text-[11px] font-bold transition-all duration-300 ${
+                      isCompleted
+                        ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                        : isActive
+                          ? "bg-primary border-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--color-ring),0.3)] ring-4 ring-primary/10"
+                          : "bg-background border-border text-muted-foreground"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    ) : (
+                      s.id
+                    )}
+                  </div>
+
+                  {/* Step label */}
+                  <div className="flex flex-col">
+                    <span className={`text-[13px] font-semibold transition-colors ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
+                      {s.label}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground leading-normal mt-0.5">{s.desc}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Right Side Form Body Panel */}
+        <div className="flex-1 flex flex-col min-h-[420px] panel p-6 sm:p-8 border border-border/80 bg-card/40 backdrop-blur-sm rounded-2xl shadow-md overflow-y-auto">
+          <div className="flex-1">
+            
+            {/* STEP 1: Overview */}
+            {activeStep === 1 && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <h3 className="text-xl font-bold tracking-tight text-foreground">Welcome to the Stance Health Hiring Assessment</h3>
+                <p className="text-[14px] leading-relaxed text-foreground/80 font-light">
+                  You have been invited to complete a secure engineering assignment. Before revealing the full problem statement and starting your clock, please complete this step-by-step checklist.
+                </p>
+                
+                <div className="p-5 rounded-xl border border-border/70 bg-secondary/35 mt-6 space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Assessment details:</h4>
+                  <div className="grid grid-cols-2 gap-4 text-[13.5px]">
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">TOPIC</span>
+                      <strong className="font-semibold text-foreground">{preview.title}</strong>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">TIMED LIMIT</span>
+                      <strong className="font-semibold text-foreground">{preview.durationHours} hours</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: Rules & Instructions */}
+            {activeStep === 2 && (
+              <div className="space-y-5 animate-in fade-in duration-200">
+                <h3 className="text-xl font-bold tracking-tight text-foreground">Guidelines & Rules</h3>
+                <p className="text-[14px] leading-relaxed text-foreground/80 font-light">
+                  Please review the rules carefully. This is a rigorous assessment, and all metrics are monitored server-side.
+                </p>
+
+                <ul className="space-y-4 mt-6">
+                  {[
+                    `The clock starts as soon as you complete the final step and click "Accept & Start Timer".`,
+                    `You have exactly ${preview.durationHours} hours to finish. You have a 10-minute grace window afterwards to push your final code.`,
+                    `Pushes made after the 10-minute grace window cannot be evaluated. No extensions are possible.`,
+                    "Do not close this browser tab during the assignment. It maintains a secure sync with our timing servers.",
+                  ].map((rule, idx) => (
+                    <li key={idx} className="flex gap-3 text-[13.5px] leading-relaxed text-foreground/90 font-light">
+                      <span className="mt-[2px] flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground border border-border">
+                        {idx + 1}
+                      </span>
+                      <span>{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* STEP 3: Git Coordinates */}
+            {activeStep === 3 && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <h3 className="text-xl font-bold tracking-tight text-foreground">Your Dedicated Branch</h3>
+                <p className="text-[14px] leading-relaxed text-foreground/80 font-light">
+                  All work must be pushed to a specific unique candidate branch in the repository. Submissions to any other branch will not be detected.
+                </p>
+
+                <div className="mt-6 border-l-4 border-l-sky-500 bg-sky-500/5 px-5 py-4 rounded-r-xl">
+                  <h4 className="text-[11.5px] font-bold tracking-wider text-sky-700 dark:text-sky-400 uppercase">Dedicated Branch</h4>
+                  <p className="mt-1 text-[13px] text-foreground">
+                    Your unique branch will be generated for your email: <strong>{preview.email}</strong>.
+                  </p>
+                  
+                  {preview.email && preview.candidateId && (
+                    <div className="mt-3 rounded-lg border border-border bg-background p-3 font-mono text-[12px] text-foreground/90 space-y-1">
+                      <p className="text-muted-foreground"># Your unique branch format:</p>
+                      <p className="font-semibold text-sky-700 dark:text-sky-400">{getCandidateBranch(preview.email, preview.candidateId)}</p>
+                    </div>
+                  )}
+                  <p className="mt-3.5 text-[11.5px] text-muted-foreground">
+                    🔒 The GitHub repository and exact Git push commands are currently blurred on your HUD. They will automatically unlock as soon as your timer begins.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: Terms and Conditions */}
+            {activeStep === 4 && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <h3 className="text-xl font-bold tracking-tight text-foreground">Accept Terms & Start</h3>
+                <p className="text-[14px] leading-relaxed text-foreground/80 font-light">
+                  You are ready! Read and accept the final timing terms below to immediately reveal the assignment brief and start your timer.
+                </p>
+
+                <div className="mt-6 rounded-xl bg-amber-500/10 p-5 border border-amber-500/30">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">🚨 Critical Warning</h4>
+                  <p className="text-[13px] leading-relaxed text-amber-700 dark:text-amber-400 font-medium mt-1">
+                    Once you click "Accept & Start Timer", your {preview.durationHours}-hour timer will begin. The timer is server-authoritative and **cannot be paused or reset** under any circumstances.
+                  </p>
+                </div>
+
+                <div className="mt-8 flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="accept"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-1 h-5 w-5 rounded border-border bg-background text-primary focus:ring-ring cursor-pointer"
+                  />
+                  <label htmlFor="accept" className="text-[13.5px] leading-relaxed text-foreground select-none cursor-pointer font-light">
+                    I understand that this is a timed assignment. The timer will start immediately and cannot be paused.
+                  </label>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Stepper Footer Action Buttons */}
+          <div className="mt-8 border-t border-border/40 pt-4 flex items-center justify-between">
+            <button
+              onClick={prevStep}
+              disabled={activeStep === 1 || starting}
+              className="px-4 py-2.5 rounded-lg border border-border text-sm font-medium hover:bg-secondary transition-colors disabled:opacity-40 cursor-pointer"
+              type="button"
+            >
+              ← Back
+            </button>
+
+            {activeStep < ONBOARDING_STEPS.length ? (
+              <button
+                onClick={nextStep}
+                className="cta-glow px-6 py-2.5 rounded-lg text-sm font-semibold cursor-pointer"
+                type="button"
+              >
+                Continue →
+              </button>
+            ) : (
+              <button
+                onClick={onStart}
+                disabled={!acceptedTerms || starting}
+                className="cta-glow px-6 py-2.5 rounded-lg text-sm font-bold disabled:opacity-50 cursor-pointer"
+                type="button"
+              >
+                {starting ? "Revealing..." : "Accept & Start Timer"}
+              </button>
+            )}
+          </div>
+
         </div>
       </div>
-
-      {/* Terms Dialog Popup */}
-      {showTerms && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in duration-200">
-            <h3 className="text-xl font-semibold text-foreground tracking-tight">Terms and Conditions</h3>
-            <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
-              Before revealing the question and starting your countdown timer, please read and agree to our terms.
-            </p>
-            
-            <div className="mt-4 rounded-lg bg-amber-500/10 p-4 border border-amber-500/30">
-              <p className="text-[12.5px] leading-relaxed text-amber-700 dark:text-amber-400 font-semibold">
-                ⚠️ Warning: As soon as you accept, the timer will begin, and there is no pausing or resetting the timer.
-              </p>
-            </div>
-            
-            <div className="mt-6 flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={accepted}
-                onChange={(e) => setAccepted(e.target.checked)}
-                className="mt-1 h-5 w-5 rounded border-border bg-background text-primary focus:ring-ring cursor-pointer"
-              />
-              <label htmlFor="terms" className="text-[13px] leading-relaxed text-foreground select-none cursor-pointer">
-                I understand and agree that this is a timed assignment. The timer will start immediately and cannot be paused.
-              </label>
-            </div>
-            
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowTerms(false)}
-                className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!accepted || starting}
-                onClick={() => {
-                  setShowTerms(false);
-                  onStart();
-                }}
-                className="cta-glow rounded-lg px-5 py-2.5 text-sm font-semibold disabled:opacity-50 cursor-pointer"
-              >
-                {starting ? "Starting..." : "Accept & Start Timer"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
@@ -357,12 +433,7 @@ function TimedPage({
 
   const targetIso = view.status === "grace" ? view.graceEndsAt : view.endsAt;
   const targetMs = targetIso ? new Date(targetIso).getTime() : 0;
-  
-  const serverOffset = useMemo(() => {
-    if (!view.serverNow) return 0;
-    return new Date(view.serverNow).getTime() - Date.now();
-  }, [view.serverNow]);
-
+  const serverOffset = view.serverNow ? new Date(view.serverNow).getTime() - Date.now() : 0;
   const remaining = targetMs - (now + serverOffset);
   const isGrace = view.status === "grace";
   const isSubmitted = view.status === "submitted";
@@ -385,7 +456,7 @@ function TimedPage({
 
   return (
     <main className="min-h-screen bg-background animate-fade-in">
-      <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md">
+      <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md sticky top-0 z-40">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
           <div className="flex items-center gap-4">
@@ -596,6 +667,7 @@ function CandidatePage() {
           openAssignment({ data: { token } })
             .then((cv) => {
               if (!cv.ok) return toError(cv.reason);
+              setView(cv);
               setView(cv);
               setPhase("timed");
             })
