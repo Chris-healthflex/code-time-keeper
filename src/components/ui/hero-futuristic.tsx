@@ -182,9 +182,12 @@ export function HeroFuturistic() {
 
   return (
     <div className="relative h-svh overflow-hidden bg-black">
-      {/* Text + CTA overlay */}
-      <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-10">
-        <h1 className="text-center text-4xl font-extrabold uppercase tracking-tight text-white sm:text-6xl xl:text-7xl">
+      {/* Title — upper area, above the 3D model */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col items-center pt-28 px-10 sm:pt-32">
+        <h1
+          className="text-center text-4xl font-extrabold uppercase tracking-tight text-white sm:text-6xl xl:text-7xl"
+          style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}
+        >
           <span className="flex flex-wrap justify-center gap-x-3 leading-tight lg:gap-x-5">
             {TITLE_WORDS.map((word, i) => (
               <span
@@ -201,15 +204,22 @@ export function HeroFuturistic() {
             ))}
           </span>
         </h1>
+      </div>
 
+      {/* Subtitle + CTA — bottom area, below the 3D model */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center pb-16 px-10">
         <p
-          className={`mt-5 max-w-sm text-center text-sm font-medium leading-relaxed text-white/65 normal-case sm:text-base ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
-          style={{ opacity: subtitleVisible ? undefined : 0 }}
+          className={`max-w-sm text-center text-sm font-medium leading-relaxed normal-case sm:text-base ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
+          style={{
+            opacity: subtitleVisible ? undefined : 0,
+            color: 'rgba(255,255,255,0.8)',
+            textShadow: '0 2px 20px rgba(0,0,0,1), 0 0 60px rgba(0,0,0,0.9)',
+          }}
         >
           {SUBTITLE}
         </p>
 
-        <div className="pointer-events-auto mt-8">
+        <div className="pointer-events-auto mt-6">
           <Link
             to="/auth"
             className={`cta-glow inline-flex px-6 py-2.5 text-sm font-medium normal-case ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}

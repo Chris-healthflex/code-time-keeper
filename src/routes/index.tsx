@@ -44,33 +44,37 @@ const logos = [
 
 function Landing() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background">
-      <header className="relative z-10 flex items-center justify-center gap-8 py-6 text-[13px] text-muted-foreground">
-        <span className="flex items-center gap-2 font-medium text-foreground">
-          <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
-        </span>
-        <nav className="hidden items-center gap-7 md:flex">
-          <a href="#platform" className="transition-colors hover:text-foreground">
-            Platform
-          </a>
-          <a href="#how" className="transition-colors hover:text-foreground">
-            How it works
-          </a>
-          <a href="#security" className="transition-colors hover:text-foreground">
-            Security
-          </a>
-        </nav>
-        <Link
-          to="/auth"
-          className="rounded-full bg-primary px-4 py-1.5 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          Sign in
-        </Link>
-      </header>
+    <main className="relative min-h-screen overflow-hidden bg-black">
+      {/* Hero with navbar floating on top of it */}
+      <div className="relative">
+        <Suspense fallback={<div className="h-svh bg-black" />}>
+          <HeroFuturistic />
+        </Suspense>
 
-      <Suspense fallback={<div className="h-svh bg-black" />}>
-        <HeroFuturistic />
-      </Suspense>
+        {/* Navbar floats over the hero */}
+        <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-center gap-8 py-6 text-[13px] text-white/70">
+          <span className="flex items-center gap-2 font-medium text-white">
+            <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
+          </span>
+          <nav className="hidden items-center gap-7 md:flex">
+            <a href="#platform" className="transition-colors hover:text-white">
+              Platform
+            </a>
+            <a href="#how" className="transition-colors hover:text-white">
+              How it works
+            </a>
+            <a href="#security" className="transition-colors hover:text-white">
+              Security
+            </a>
+          </nav>
+          <Link
+            to="/auth"
+            className="rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[13px] font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+          >
+            Sign in
+          </Link>
+        </header>
+      </div>
 
       <section className="relative z-10 border-t border-border/70 px-6 py-6">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-10 gap-y-4 text-[11px] font-medium tracking-wide text-muted-foreground/70">
