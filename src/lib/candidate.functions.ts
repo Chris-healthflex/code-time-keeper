@@ -4,6 +4,57 @@ import { z } from "zod";
 
 const tokenSchema = z.object({ token: z.string().min(20).max(4096) });
 
+export interface AssignmentPreview {
+  ok: boolean;
+  reason?: string;
+  email?: string;
+  title?: string;
+  problemStatement?: string;
+  githubRepo?: string;
+  durationHours?: number;
+  alreadyStarted?: boolean;
+}
+
+/** Reads assignment details WITHOUT starting the timer. Safe to call on page load. */
+export const peekAssignment = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .handler(async ({ data }): Promise<AssignmentPreview> => {
+    const { verifyLink } = await import("./link-token.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const claims = await verifyLink(data.token);
+    if (!claims) return { ok: false, reason: "invalid_link" };
+
+    const { data: candidate } = await supabaseAdmin
+      .from("candidates")
+      .select("*, assignments(*)")
+      .eq("id", claims.cid)
+      .maybeSingle();
+
+    if (!candidate || candidate.token_id !== claims.jti) return { ok: false, reason: "invalid_link" };
+    if (candidate.revoked) return { ok: false, reason: "revoked" };
+
+    const assignment = candidate.assignments as unknown as {
+      title: string;
+      problem_statement: string;
+      github_repo: string;
+      duration_hours: number;
+    } | null;
+    if (!assignment) return { ok: false, reason: "invalid_link" };
+
+    if (candidate.status === "expired") return { ok: false, reason: "closed" };
+
+    return {
+      ok: true,
+      email: candidate.email,
+      title: assignment.title,
+      problemStatement: assignment.problem_statement,
+      githubRepo: assignment.github_repo,
+      durationHours: assignment.duration_hours,
+      alreadyStarted: !!candidate.started_at,
+    };
+  });
+
 export interface CandidateView {
   ok: boolean;
   reason?: string;
