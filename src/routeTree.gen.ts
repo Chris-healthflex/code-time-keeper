@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ATokenRouteImport } from './routes/a.$token'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiPublicHooksTimerTickRouteImport } from './routes/api/public/hooks/timer-tick'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const ATokenRoute = ATokenRouteImport.update({
   path: '/a/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 const ApiPublicHooksTimerTickRoute = ApiPublicHooksTimerTickRouteImport.update({
   id: '/api/public/hooks/timer-tick',
   path: '/api/public/hooks/timer-tick',
@@ -44,44 +50,59 @@ const ApiPublicHooksTimerTickRoute = ApiPublicHooksTimerTickRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/a/$token': typeof ATokenRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/a/$token': typeof ATokenRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/a/$token': typeof ATokenRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/admin' | '/auth' | '/a/$token' | '/api/public/hooks/timer-tick'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/a/$token'
+    | '/auth/callback'
+    | '/api/public/hooks/timer-tick'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/auth' | '/a/$token' | '/api/public/hooks/timer-tick'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/a/$token'
+    | '/auth/callback'
+    | '/api/public/hooks/timer-tick'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
     | '/a/$token'
+    | '/auth/callback'
     | '/api/public/hooks/timer-tick'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   ATokenRoute: typeof ATokenRoute
   ApiPublicHooksTimerTickRoute: typeof ApiPublicHooksTimerTickRoute
 }
@@ -116,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ATokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/api/public/hooks/timer-tick': {
       id: '/api/public/hooks/timer-tick'
       path: '/api/public/hooks/timer-tick'
@@ -126,10 +154,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   ATokenRoute: ATokenRoute,
   ApiPublicHooksTimerTickRoute: ApiPublicHooksTimerTickRoute,
 }

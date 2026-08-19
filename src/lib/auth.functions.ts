@@ -16,20 +16,10 @@ export const resolveAuthDestination = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = context.userId;
     // Supabase access tokens include email as a standard claim
-    const email = ((context.claims as Record<string, unknown>).email as string | undefined)?.toLowerCase() ?? null;
+    const email = ((context.claims as Record<string, unknown>)["email"] as string | undefined)?.toLowerCase() ?? null;
 
     // ── 1. Check if this user already has the admin role ──────────────────
-    const { data: roleRow } = await (
-      context.supabase as {
-        from: (t: string) => {
-          select: (c: string) => {
-            eq: (a: string, b: string) => {
-              eq: (a: string, b: string) => { maybeSingle: () => Promise<{ data: unknown }> };
-            };
-          };
-        };
-      }
-    )
+    const { data: roleRow } = await (context.supabase as any)
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
