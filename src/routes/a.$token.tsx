@@ -6,6 +6,7 @@ import {
   type AssignmentPreview,
   type CandidateView,
 } from "@/lib/candidate.functions";
+import { getCandidateBranch } from "@/lib/utils";
 import logoWhite from "@/assets/logo-white.png";
 
 export const Route = createFileRoute("/a/$token")({
@@ -150,13 +151,33 @@ function QuestionPage({
           </div>
         </div>
 
+        {/* Unique Branch and Git Instructions */}
+        {preview.email && preview.candidateId && (
+          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-5 sm:px-8">
+            <h3 className="text-[13px] font-semibold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
+              Your Unique Branch
+            </h3>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground">
+              You must push your code to your dedicated candidate branch in the repository:
+            </p>
+            <div className="mt-3 rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto">
+              <p><span className="text-muted-foreground"># Your unique branch:</span> <strong className="text-sky-700 dark:text-sky-400 font-semibold">{getCandidateBranch(preview.email, preview.candidateId)}</strong></p>
+              <p><span className="text-muted-foreground"># How to push to your branch:</span></p>
+              <p className="text-muted-foreground">git checkout -b {getCandidateBranch(preview.email, preview.candidateId)}</p>
+              <p className="text-muted-foreground">git add .</p>
+              <p className="text-muted-foreground">git commit -m "feat: complete assignment"</p>
+              <p className="text-muted-foreground">git push -u origin {getCandidateBranch(preview.email, preview.candidateId)}</p>
+            </div>
+          </div>
+        )}
+
         {/* Deliverables reminder */}
         <Section title="Before you start">
           <ul className="space-y-2">
             {[
               "Read the full brief above carefully — the clock starts when you click the button below.",
               `You have ${preview.durationHours} hours from that moment. After time is up, you have a 10-minute grace window to push your final commit.`,
-              "Push your code to the GitHub repository shown above. That is the only accepted submission method.",
+              `Push your code to your unique branch shown above. Pushes to main or other branches will not be recognized.`,
               "Do not close this tab during the assignment — it polls the server and keeps your session alive.",
             ].map((t, i) => (
               <li key={i} className="flex gap-3 text-[13.5px] leading-relaxed text-foreground/90">
@@ -270,6 +291,29 @@ function TimedPage({ view }: { view: CandidateView }) {
             {view.githubRepo?.replace(/^https?:\/\//, "")}
           </a>
         </div>
+
+        {/* Unique Branch and Git Instructions */}
+        {view.email && view.candidateId && (
+          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-5 sm:px-8">
+            <h3 className="text-[13px] font-semibold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
+              Your Dedicated Candidate Branch
+            </h3>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground">
+              Push your code to your unique candidate branch. Pushes to other branches cannot be evaluated:
+            </p>
+            <div className="mt-3 rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto">
+              <p><span className="text-muted-foreground"># Your unique branch:</span> <strong className="text-sky-700 dark:text-sky-400 font-semibold">{getCandidateBranch(view.email, view.candidateId)}</strong></p>
+              <p><span className="text-muted-foreground"># How to push to your branch:</span></p>
+              <p className="text-muted-foreground">git checkout -b {getCandidateBranch(view.email, view.candidateId)}</p>
+              <p className="text-muted-foreground">git add .</p>
+              <p className="text-muted-foreground">git commit -m "feat: complete assignment"</p>
+              <p className="text-muted-foreground">git push -u origin {getCandidateBranch(view.email, view.candidateId)}</p>
+            </div>
+            <p className="mt-3 text-[12px] text-muted-foreground">
+              Once pushed, the system will automatically sync. You can close this tab safely once your status shows "Submitted".
+            </p>
+          </div>
+        )}
 
         <section className="panel mt-10 p-6 sm:p-8">
           <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">

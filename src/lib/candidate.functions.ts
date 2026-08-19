@@ -7,6 +7,7 @@ const tokenSchema = z.object({ token: z.string().min(20).max(4096) });
 export interface AssignmentPreview {
   ok: boolean;
   reason?: string;
+  candidateId?: string;
   email?: string;
   title?: string;
   problemStatement?: string;
@@ -46,6 +47,7 @@ export const peekAssignment = createServerFn({ method: "POST" })
 
     return {
       ok: true,
+      candidateId: candidate.id,
       email: candidate.email,
       title: assignment.title,
       problemStatement: assignment.problem_statement,
@@ -58,6 +60,7 @@ export const peekAssignment = createServerFn({ method: "POST" })
 export interface CandidateView {
   ok: boolean;
   reason?: string;
+  candidateId?: string;
   email?: string;
   title?: string;
   problemStatement?: string;
@@ -163,6 +166,7 @@ export const openAssignment = createServerFn({ method: "POST" })
     if (candidate.submitted_at) {
       return {
         ok: true,
+        candidateId: candidate.id,
         status: "submitted",
         email: candidate.email,
         title: assignment.title,
@@ -212,6 +216,7 @@ export const openAssignment = createServerFn({ method: "POST" })
 
     return {
       ok: true,
+      candidateId: candidate.id,
       status: graceEndsAt ? "grace" : "in_progress",
       email: candidate.email,
       title: assignment.title,

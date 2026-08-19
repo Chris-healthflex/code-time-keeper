@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getCandidateBranch } from "@/lib/utils";
 import logoWhite from "@/assets/logo-white.png";
 import {
   getMe,
@@ -124,6 +125,22 @@ type CandidateRow = {
   invite_sent_at: string | null;
   assignments?: { title: string; github_repo: string; duration_hours: number } | null;
 };
+
+function getRemainingText(c: CandidateRow, serverNowStr: string) {
+  if (!c.started_at || !c.ends_at) return "—";
+  if (c.submitted_at) return "Submitted";
+  if (c.revoked) return "Revoked";
+  
+  const endsAtMs = new Date(c.ends_at).getTime();
+  const serverNowMs = serverNowStr ? new Date(serverNowStr).getTime() : Date.now();
+  const diffMs = endsAtMs - serverNowMs;
+  
+  if (diffMs <= 0) return "Time is up";
+  
+  const hours = Math.floor(diffMs / 3600_000);
+  const mins = Math.floor((diffMs % 3600_000) / 60_000);
+  return `${hours}h ${mins}m remaining`;
+}
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -508,7 +525,7 @@ function AdminPage() {
             </form>
           </div>
 
-          <div>
+          <div className="overflow-x-auto">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-medium">Candidates</h2>
               {serverNow && (
@@ -518,47 +535,79 @@ function AdminPage() {
               )}
             </div>
             <div className="overflow-hidden rounded-xl border border-border">
-              <table className="w-full text-left text-[13px]">
+              <table className="w-full text-left text-[13px] min-w-[750px]">
                 <thead className="border-b border-border bg-secondary/40 text-[11px] uppercase tracking-wider text-muted-foreground">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Email</th>
+                    <th className="px-4 py-3 font-medium">Candidate Email</th>
+                    <th className="px-4 py-3 font-medium">Topic (Assignment)</th>
                     <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Started</th>
+                    <th className="px-4 py-3 font-medium">Ends At</th>
+                    <th className="px-4 py-3 font-medium">Remaining</th>
+                    <th className="px-4 py-3 font-medium">Branch Link</th>
                     <th className="px-4 py-3 font-medium" />
                   </tr>
                 </thead>
                 <tbody>
                   {candidates.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                         No candidates yet
                       </td>
                     </tr>
                   )}
-                  {candidates.map((c) => (
-                    <tr key={c.id} className="border-b border-border/60 last:border-0">
-                      <td className="px-4 py-3">{c.email}</td>
-                      <td className="px-4 py-3">{statusBadge(c)}</td>
-                      <td className="px-4 py-3 text-[12px] text-muted-foreground">
-                        {c.started_at
-                          ? new Date(c.started_at).toLocaleString()
-                          : c.invite_sent_at
-                            ? "Invite sent"
+                  {candidates.map((c) => {
+                    const branchName = getCandidateBranch(c.email, c.id);
+                    const repoUrl = c.assignments?.github_repo ?? "";
+                    const branchUrl = repoUrl ? `${repoUrl.replace(/\.git$/, "")}/tree/${branchName}` : "";
+
+                    return (
+                      <tr key={c.id} className="border-b border-border/60 last:border-0">
+                        <td className="px-4 py-3 font-medium">{c.email}</td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {c.assignments?.title ?? "—"}
+                        </td>
+                        <td className="px-4 py-3">{statusBadge(c)}</td>
+                        <td className="px-4 py-3 text-[12px] text-muted-foreground">
+                          {c.ends_at
+                            ? new Date(c.ends_at).toLocaleString()
                             : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {c.started_at && !c.submitted_at && (
-                          <button
-                            type="button"
-                            onClick={() => handleCheckSubmission(c.id)}
-                            className="text-[12px] text-muted-foreground hover:text-foreground"
-                          >
-                            Check push
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-4 py-3 text-[12px] font-medium">
+                          {getRemainingText(c, serverNow)}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-[11.5px]">
+                          {branchUrl ? (
+                            <a
+                              href={branchUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1"
+                            >
+                              <span>{branchName}</span>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                <polyline points="15 3 21 3 21 9" />
+                                <line x1="10" y1="14" x2="21" y2="3" />
+                              </svg>
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {c.started_at && !c.submitted_at && (
+                            <button
+                              type="button"
+                              onClick={() => handleCheckSubmission(c.id)}
+                              className="rounded border border-border bg-secondary/35 px-2.5 py-1 text-[11.5px] font-medium text-foreground transition-colors hover:bg-secondary"
+                            >
+                              Check branch push
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

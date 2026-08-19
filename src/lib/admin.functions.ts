@@ -239,9 +239,17 @@ export const checkSubmission = createServerFn({ method: "POST" })
     const ghToken = process.env["GITHUB_TOKEN"];
     if (ghToken) headers["Authorization"] = `Bearer ${ghToken}`;
 
-    const res = await fetch(`https://api.github.com/repos/${match[1]}/${match[2]}/commits?per_page=1`, {
+    const { getCandidateBranch } = await import("./utils");
+    const branchName = getCandidateBranch(candidate.email, candidate.id);
+
+    const res = await fetch(`https://api.github.com/repos/${match[1]}/${match[2]}/commits?sha=${branchName}&per_page=1`, {
       headers,
     });
+
+    if (res.status === 404 || res.status === 422) {
+      return { ok: true, submitted: false, lastPushAt: null, author: null, branchExists: false };
+    }
+
     if (!res.ok) return { ok: false, reason: `github_${res.status}` };
     const commits = (await res.json()) as Array<{
       commit?: { author?: { date?: string; email?: string; name?: string } };
