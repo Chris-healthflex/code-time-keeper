@@ -249,16 +249,6 @@ function QuestionPage({
           </div>
         )}
 
-        {/* Problem statement */}
-        <div className="panel mt-8 px-6 py-8 sm:px-10 border border-border bg-card/40 backdrop-blur-sm shadow-md rounded-2xl">
-          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2.5">
-            Assignment brief
-          </h2>
-          <div className="mt-5">
-            <ProblemStatement text={preview.problemStatement ?? ""} />
-          </div>
-        </div>
-
         {/* Deliverables reminder */}
         <Section title="Before you start">
           <ul className="space-y-3.5 mt-4">
