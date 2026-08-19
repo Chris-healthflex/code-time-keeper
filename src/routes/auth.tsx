@@ -39,7 +39,6 @@ function AuthPage() {
   const [pwError, setPwError] = useState<string | null>(null);
 
   // Google state
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
 
   async function handleMagicLink(e: React.FormEvent) {
@@ -80,23 +79,7 @@ function AuthPage() {
   }
 
   async function handleGoogle() {
-    setGoogleLoading(true);
-    setGoogleError(null);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: { prompt: "select_account" },
-      },
-    });
-    if (error) {
-      setGoogleError(
-        error.message.includes("not enabled") || error.message.includes("provider")
-          ? "Google sign-in isn't configured yet — use the email link below or enable Google in Supabase → Auth → Providers."
-          : error.message,
-      );
-      setGoogleLoading(false);
-    }
+    setGoogleError("Google sign-in isn't configured yet. Use the email link below instead.");
   }
 
   return (
@@ -118,15 +101,10 @@ function AuthPage() {
         <button
           type="button"
           onClick={handleGoogle}
-          disabled={googleLoading}
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background px-4 py-2.5 text-[13px] font-medium text-foreground shadow-sm transition-colors hover:bg-secondary disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background px-4 py-2.5 text-[13px] font-medium text-foreground shadow-sm transition-colors hover:bg-secondary"
         >
-          {googleLoading ? (
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
-          ) : (
-            <GoogleIcon />
-          )}
-          {googleLoading ? "Redirecting…" : "Continue with Google"}
+          <GoogleIcon />
+          Continue with Google
         </button>
         {googleError && (
           <p className="mt-2 rounded-md bg-amber-500/10 px-3 py-2 text-[12px] text-amber-700 dark:text-amber-400">
