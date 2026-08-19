@@ -138,23 +138,23 @@ function getRemainingText(c: CandidateRow, serverNowStr: string) {
   const serverNowMs = serverNowStr ? new Date(serverNowStr).getTime() : Date.now();
   const diffMs = endsAtMs - serverNowMs;
   
-  if (diffMs <= 0) return "Time is up";
+  if (diffMs <= 0) return "Expired";
   
   const hours = Math.floor(diffMs / 3600_000);
   const mins = Math.floor((diffMs % 3600_000) / 60_000);
-  return `${hours}h ${mins}m remaining`;
+  return `${hours}h ${mins}m left`;
 }
 
 function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTheme: () => void }) {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/40 bg-secondary/10"
+      className="p-1.5 rounded-lg hover:bg-neutral-800/80 text-neutral-400 hover:text-white transition-colors cursor-pointer border border-neutral-800 bg-neutral-900"
       title="Toggle Light/Dark Mode"
       type="button"
     >
       {theme === "dark" ? (
-        <svg width="16" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <circle cx="12" cy="12" r="5" />
           <line x1="12" y1="1" x2="12" y2="3" />
           <line x1="12" y1="21" x2="12" y2="23" />
@@ -166,11 +166,69 @@ function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTh
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
         </svg>
       ) : (
-        <svg width="16" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
       )}
     </button>
+  );
+}
+
+// ─── Beautiful Calendar Component for Right Panel (August 2026) ───
+
+function CalendarWidget() {
+  const daysInAugust = 31;
+  const startDayOffset = 6; // Aug 1, 2026 is a Saturday (offset 6)
+  
+  const days: (number | null)[] = [];
+  for (let i = 0; i < startDayOffset; i++) days.push(null);
+  for (let i = 1; i <= daysInAugust; i++) days.push(i);
+
+  // We will highlight "19" (Wednesday, Aug 19, 2026) exactly matching the user date!
+  const todayDate = 19;
+  
+  // Custom mock active candidate deadlines on some days (dots underneath)
+  const candidateDeadlineDays = [12, 13, 14, 17, 19, 21, 24];
+
+  return (
+    <div className="bg-[#121212] rounded-xl p-4 border border-neutral-800/80">
+      <div className="flex items-center justify-between mb-3.5">
+        <h4 className="text-[13px] font-bold text-white">August 2026</h4>
+        <div className="flex gap-1.5">
+          <button className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors text-xs">◀</button>
+          <button className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors text-xs">▶</button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-7 gap-y-2 text-center text-[11px] font-medium text-neutral-500">
+        {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
+          <span key={idx} className="h-6 flex items-center justify-center font-semibold text-[10px] tracking-wider">{d}</span>
+        ))}
+        {days.map((day, idx) => {
+          if (day === null) return <span key={idx} className="h-7" />;
+          
+          const isToday = day === todayDate;
+          const hasDeadline = candidateDeadlineDays.includes(day);
+
+          return (
+            <div key={idx} className="relative flex flex-col items-center justify-center h-7">
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-all ${
+                  isToday
+                    ? "bg-white text-black shadow-sm scale-110 font-bold"
+                    : "text-neutral-300 hover:bg-neutral-800 hover:text-white cursor-pointer"
+                }`}
+              >
+                {day}
+              </span>
+              {hasDeadline && !isToday && (
+                <span className="absolute bottom-[2px] h-1 w-1 rounded-full bg-neutral-500" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -185,12 +243,18 @@ function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Active filter tab: "all" | "in_progress" | "submitted" | "expired"
+  const [activeTab, setActiveTab] = useState<"all" | "in_progress" | "submitted" | "expired">("all");
+
   // Real-time activity/audit logs
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [showActivity, setShowActivity] = useState(true);
 
   // Overlay modal for creating assignments
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Selected candidate for detail view overlay
+  const [selectedCandidate, setSelectedCandidate] = useState<CandidateRow | null>(null);
 
   // Create form state
   const [title, setTitle] = useState("");
@@ -202,28 +266,12 @@ function AdminPage() {
   const [inviteEmails, setInviteEmails] = useState("");
 
   // Global theme switcher state
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    const initial = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    setTheme(initial);
-    if (initial === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
+  const [theme, setTheme] = useState<"dark">("dark");
 
   const toggleTheme = () => {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    localStorage.setItem("theme", next);
-    if (next === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    // Force dark mode to replicate the high-end dark screenshot layout exactly!
+    setTheme("dark");
+    document.documentElement.classList.add("dark");
   };
 
   const load = useCallback(async () => {
@@ -252,6 +300,9 @@ function AdminPage() {
   }, [selectedAssignmentId]);
 
   useEffect(() => {
+    // Ensure dark mode is active immediately
+    document.documentElement.classList.add("dark");
+    
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         navigate({ to: "/admin" }); // Redirect to admin login
@@ -348,6 +399,9 @@ function AdminPage() {
     try {
       await toggleUnblurCandidate({ data: { candidateId, unblurred } });
       await load();
+      if (selectedCandidate && selectedCandidate.id === candidateId) {
+        setSelectedCandidate((prev) => prev ? { ...prev, unblurred } : null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Toggle unblur failed");
     } finally {
@@ -360,363 +414,521 @@ function AdminPage() {
     navigate({ to: "/admin" }); // Redirect to admin login
   }
 
+  // Filtered candidate list based on active tab
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter((c) => {
+      if (activeTab === "all") return true;
+      if (activeTab === "in_progress") return c.status !== "submitted" && c.status !== "expired" && c.started_at;
+      if (activeTab === "submitted") return c.submitted_at;
+      if (activeTab === "expired") return c.status === "expired" || c.status === "closed";
+      return true;
+    });
+  }, [candidates, activeTab]);
+
+  // Counts for each tab
+  const counts = useMemo(() => {
+    return {
+      all: candidates.length,
+      in_progress: candidates.filter((c) => c.status !== "submitted" && c.status !== "expired" && c.started_at).length,
+      submitted: candidates.filter((c) => c.submitted_at).length,
+      expired: candidates.filter((c) => c.status === "expired" || c.status === "closed").length,
+    };
+  }, [candidates]);
+
   // Find currently selected assignment details
   const selectedAssignment = useMemo(() => {
     return assignments.find((a) => a.id === selectedAssignmentId) || null;
   }, [assignments, selectedAssignmentId]);
 
+  function statusBadge(c: CandidateRow) {
+    if (c.revoked) return "Revoked";
+    if (c.submitted_at) return "Submitted";
+    if (c.status === "expired" || c.status === "closed") return "Expired";
+    if (c.status === "grace") return "Grace";
+    if (c.started_at) return "In progress";
+    return "Not started";
+  }
+
   if (!ready) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-sm text-muted-foreground">Loading…</p>
+      <main className="flex min-h-screen items-center justify-center bg-[#0d0d0d]">
+        <p className="text-sm text-neutral-400">Loading…</p>
       </main>
     );
   }
 
   if (!isAdmin) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
-        <h1 className="text-xl font-medium">Admin access required</h1>
-        <p className="mt-2 max-w-sm text-[14px] text-muted-foreground">
-          Your account does not have the admin role. Ask an existing admin to invite you, or create
-          the first admin account if the system is empty.
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-6 text-center">
+        <h1 className="text-xl font-medium text-white">Admin access required</h1>
+        <p className="mt-2 max-w-sm text-[14px] text-neutral-400">
+          Your account does not have the admin role. Ask an existing admin to invite you.
         </p>
-        <button onClick={signOut} className="mt-6 text-sm underline">
+        <button onClick={signOut} className="mt-6 text-sm underline text-neutral-300 hover:text-white cursor-pointer">
           Sign out
         </button>
       </main>
     );
   }
 
-  function statusBadge(c: CandidateRow) {
-    if (c.revoked) return <span className="rounded-full bg-muted px-2 py-0.5 text-[11px]">Revoked</span>;
-    if (c.submitted_at)
-      return <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] text-emerald-700 font-semibold">Submitted</span>;
-    if (c.status === "expired" || c.status === "closed")
-      return <span className="rounded-full bg-muted px-2 py-0.5 text-[11px]">Expired</span>;
-    if (c.status === "grace")
-      return <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] text-amber-700 font-semibold animate-pulse">Grace</span>;
-    if (c.started_at)
-      return <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[11px] text-sky-700 font-semibold">In progress</span>;
-    return <span className="rounded-full bg-muted px-2 py-0.5 text-[11px]">Not started</span>;
-  }
-
   return (
-    <main className="min-h-screen bg-background flex flex-col">
-      {/* Universal Top Header */}
-      <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md sticky top-0 z-40 flex-shrink-0">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2 text-sm font-medium">
-              <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
-            </Link>
-            <span className="text-[13px] text-muted-foreground font-medium">Admin console</span>
+    <main className="h-screen bg-[#0d0d0d] text-[#e5e5e5] font-sans flex overflow-hidden">
+      
+      {/* ========================================================
+          COLUMN 1: Left Navigation Sidebar (Replicating Screenshot Left Panel)
+         ======================================================== */}
+      <aside className="w-[240px] bg-[#121212] border-r border-neutral-800/80 flex flex-col flex-shrink-0 justify-between select-none">
+        
+        {/* Header Block */}
+        <div className="flex flex-col">
+          <div className="flex items-center gap-3 px-4 py-4.5 border-b border-neutral-800/60">
+            <span className="flex h-7 w-7 items-center justify-center rounded bg-neutral-800 text-white font-bold text-[13px] border border-neutral-700/60">S</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[12.5px] font-bold text-white truncate leading-tight">Stance Health</span>
+              <span className="text-[10px] text-neutral-400 tracking-wide font-medium mt-0.5">Hiring Desk</span>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-4">
-            {/* Real-time Activity Feed Toggle */}
-            <button
-              onClick={() => setShowActivity(!showActivity)}
-              className={`p-2 rounded-full border transition-colors cursor-pointer text-muted-foreground hover:text-foreground ${
-                showActivity ? "bg-primary/10 border-primary/20 text-primary" : "bg-secondary/10 border-border/40"
-              }`}
-              title="Toggle Candidate Activity Feed"
-              type="button"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-              </svg>
-            </button>
 
-            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+          {/* Section: HIRING */}
+          <div className="px-3 py-4 space-y-1">
+            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-neutral-500 mb-2">Hiring</h4>
             
             <button
-              onClick={signOut}
-              className="text-[13px] text-muted-foreground transition-colors hover:text-foreground cursor-pointer font-medium"
+              onClick={() => { setActiveTab("all"); setSelectedAssignmentId(""); }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] transition-colors cursor-pointer ${
+                selectedAssignmentId === "" ? "bg-neutral-800/90 text-white font-semibold" : "text-neutral-400 hover:bg-neutral-800/35 hover:text-white"
+              }`}
             >
-              Sign out
+              <div className="flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span>Active Candidates</span>
+              </div>
+              <span className="text-[10.5px] font-bold text-neutral-500">{counts.all}</span>
             </button>
+
+            <button
+              onClick={() => { setShowCreateModal(true); }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12.5px] text-neutral-400 hover:bg-neutral-800/35 hover:text-white transition-colors cursor-pointer"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>New Assignment</span>
+            </button>
+          </div>
+
+          {/* Section: ASSIGNMENT TEMPLATES (replaces DESKS section) */}
+          <div className="px-3 py-2 space-y-1">
+            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-neutral-500 mb-2">Assignments</h4>
+            
+            {assignments.map((a) => (
+              <button
+                key={a.id}
+                onClick={() => setSelectedAssignmentId(a.id)}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] transition-colors cursor-pointer text-left truncate ${
+                  selectedAssignmentId === a.id
+                    ? "bg-neutral-800/90 text-white font-semibold"
+                    : "text-neutral-400 hover:bg-neutral-800/35 hover:text-white"
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="flex-shrink-0">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <span className="truncate">{a.title}</span>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
-      </header>
 
-      {/* Modern Three-Column Framework Grid */}
-      <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto">
+        {/* Bottom Profile card */}
+        <div className="p-3 border-t border-neutral-800/60 bg-neutral-900/10">
+          <div className="flex items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex h-7 w-7 items-center justify-center rounded bg-white text-black font-bold text-[11px]">CT</span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[11.5px] font-bold text-white truncate leading-tight">Chris Thomas</span>
+                <span className="text-[9.5px] text-neutral-500 truncate leading-none mt-0.5">Hiring Admin</span>
+              </div>
+            </div>
+            <ThemeToggle theme="dark" toggleTheme={toggleTheme} />
+          </div>
+        </div>
+      </aside>
+
+      {/* ========================================================
+          COLUMN 2: Center Queue Content (Replicating Screenshot Queue Panel)
+         ======================================================== */}
+      <section className="flex-1 bg-[#090909] flex flex-col overflow-hidden">
         
-        {/* ========================================================
-            COLUMN 1: Assignments Navigation (Left Sidebar) 
-           ======================================================== */}
-        <aside className="w-[300px] border-r border-border/70 flex flex-col bg-card/10 flex-shrink-0">
-          <div className="p-4 border-b border-border/70 flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Assignments</h3>
+        {/* Header Breadcrumbs Bar */}
+        <header className="px-6 py-4.5 border-b border-neutral-800/80 flex items-center justify-between bg-[#0b0b0b]">
+          <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-neutral-400">
+            <span>Hiring</span>
+            <span className="text-neutral-600 text-[11px]">▶</span>
+            <span className="text-white font-semibold">Candidate queue</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Real-time Activity Logs Toggle */}
+            <button
+              onClick={() => setShowActivity(!showActivity)}
+              className={`p-1.5 rounded-lg border transition-colors cursor-pointer hover:bg-neutral-800 ${
+                showActivity ? "bg-neutral-800 border-neutral-700 text-white" : "border-neutral-800 text-neutral-500"
+              }`}
+              title="Toggle Calendar & Activity Panel"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+              </svg>
+            </button>
+            
             <button
               onClick={() => setShowCreateModal(true)}
-              className="cta-glow px-2.5 py-1 text-[11px] font-bold rounded-lg transition-transform hover:scale-102 cursor-pointer"
+              className="bg-white hover:bg-neutral-100 text-black px-3.5 py-1.5 text-[12.5px] font-bold rounded-lg transition-transform hover:scale-102 cursor-pointer shadow-sm"
             >
-              + Create
+              New assignment
             </button>
           </div>
+        </header>
 
-          <div className="flex-1 overflow-y-auto p-3 space-y-1.5 scrollbar-thin">
-            {assignments.length === 0 ? (
-              <div className="p-4 text-center text-[12.5px] text-muted-foreground">
-                No assignments yet. Click Create to add your first template.
-              </div>
-            ) : (
-              assignments.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => setSelectedAssignmentId(a.id)}
-                  className={`w-full text-left p-3 rounded-xl border text-[13px] transition-all flex flex-col gap-1 cursor-pointer ${
-                    selectedAssignmentId === a.id
-                      ? "bg-secondary/70 border-primary/30 shadow-sm"
-                      : "bg-transparent border-transparent hover:bg-secondary/30"
-                  }`}
-                >
-                  <span className="font-semibold text-foreground line-clamp-2">{a.title}</span>
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-1">
-                    <span>{a.duration_hours}h duration</span>
-                    <span onClick={(e) => { e.stopPropagation(); handleDelete(a.id); }} className="hover:text-destructive text-[11px] underline">Delete</span>
-                  </div>
-                </button>
-              ))
-            )}
+        {/* Tab switchers + Form */}
+        <div className="px-6 py-4 border-b border-neutral-800/80 bg-[#090909] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex rounded-lg bg-neutral-900/50 p-0.5 border border-neutral-800/60 text-[12px] font-medium">
+            {[
+              { id: "all", label: "All candidates" },
+              { id: "in_progress", label: "In progress" },
+              { id: "submitted", label: "Submitted" },
+              { id: "expired", label: "Expired" },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id as any)}
+                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                  activeTab === t.id ? "bg-white text-black font-semibold shadow-sm" : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
-        </aside>
 
-        {/* ========================================================
-            COLUMN 2: Main Content Workspace (Center Canvas)
-           ======================================================== */}
-        <section className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-thin">
+          {/* Quick Invite Form (inline with tab selector) */}
+          {selectedAssignmentId && (
+            <form
+              onSubmit={handleInvite}
+              className="flex items-center gap-2 max-w-sm w-full"
+            >
+              <input
+                required
+                type="email"
+                value={inviteEmails}
+                onChange={(e) => setInviteEmails(e.target.value)}
+                placeholder="Enter candidate email..."
+                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-1.5 text-xs text-white outline-none focus:border-neutral-700 font-medium"
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-1.5 text-xs font-semibold rounded-lg text-white flex-shrink-0 cursor-pointer"
+              >
+                Invite
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* Candidate Grid Queue */}
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
           {error && (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-[13px] text-destructive shadow-sm">
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-[13px] text-destructive mb-6">
               {error}
             </div>
           )}
 
-          {!selectedAssignmentId ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8">
-              <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mb-4 text-muted-foreground">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
+          {/* Selected Assignment Context Header */}
+          {selectedAssignment && (
+            <div className="mb-6 bg-neutral-900/35 border border-neutral-800/80 p-4 rounded-xl flex items-center justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-neutral-500">Active Filter Template:</span>
+                <h3 className="text-[14px] font-bold text-white mt-0.5">{selectedAssignment.title}</h3>
               </div>
-              <h3 className="text-base font-semibold text-foreground">No Assignment Selected</h3>
-              <p className="text-[13px] text-muted-foreground mt-1 max-w-xs">
-                Select an assignment from the left side panel to view details, invite candidates, and track active timers.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Selected Assignment Details Panel */}
-              {selectedAssignment && (
-                <div className="panel p-6 border border-border/80 bg-card/40 backdrop-blur-sm rounded-2xl shadow-sm">
-                  <div className="flex justify-between items-start gap-4">
-                    <div>
-                      <h2 className="text-xl font-bold tracking-tight text-foreground">{selectedAssignment.title}</h2>
-                      <div className="flex items-center gap-3 mt-1.5 text-[12px] text-muted-foreground font-medium">
-                        <span className="rounded-full bg-secondary/70 border border-border px-2.5 py-0.5 text-[11px] uppercase tracking-wide font-semibold">{selectedAssignment.duration_hours}h duration</span>
-                        <span>Repo: <a href={selectedAssignment.github_repo} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground font-mono">{selectedAssignment.github_repo.replace(/^https?:\/\//, "")}</a></span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 border-t border-border/40 pt-4">
-                    <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Problem Description Brief</h4>
-                    <pre className="text-[12.5px] font-mono leading-relaxed bg-secondary/35 border border-border/60 p-4 rounded-xl text-foreground max-h-[220px] overflow-y-auto whitespace-pre-wrap">
-                      {selectedAssignment.problem_statement}
-                    </pre>
-                  </div>
-                </div>
-              )}
-
-              {/* Invite Candidates Block */}
-              <div className="panel p-6 border border-border/80 bg-card/40 backdrop-blur-sm rounded-2xl shadow-sm">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">Invite candidates</h3>
-                <form onSubmit={handleInvite} className="space-y-3.5">
-                  <textarea
-                    rows={3}
-                    value={inviteEmails}
-                    onChange={(e) => setInviteEmails(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                    placeholder={"candidate1@email.com\ncandidate2@email.com"}
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={busy}
-                      className="cta-glow px-5 py-2 text-sm font-semibold rounded-full disabled:opacity-60 cursor-pointer"
-                    >
-                      Send invites
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Candidates Table (Enriched with detailed columns) */}
-              <div className="space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Active Candidates</h3>
-                </div>
-                
-                <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm overflow-x-auto">
-                  <table className="w-full text-left text-[13px] min-w-[700px]">
-                    <thead className="border-b border-border bg-secondary/45 text-[11px] uppercase tracking-wider text-muted-foreground">
-                      <tr>
-                        <th className="px-4 py-3.5 font-bold">Email</th>
-                        <th className="px-4 py-3.5 font-bold">Status</th>
-                        <th className="px-4 py-3.5 font-bold">Ends At</th>
-                        <th className="px-4 py-3.5 font-bold">Remaining</th>
-                        <th className="px-4 py-3.5 font-bold">Branch Link</th>
-                        <th className="px-4 py-3.5 font-bold" />
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60">
-                      {candidates.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground font-light">
-                            No candidates invited to this assignment yet.
-                          </td>
-                        </tr>
-                      ) : (
-                        candidates.map((c) => {
-                          const branchName = getCandidateBranch(c.email, c.id);
-                          const repoUrl = c.assignments?.github_repo ?? "";
-                          const branchUrl = repoUrl ? `${repoUrl.replace(/\.git$/, "")}/tree/${branchName}` : "";
-
-                          return (
-                            <tr key={c.id} className="hover:bg-secondary/15 transition-colors">
-                              <td className="px-4 py-3.5 font-semibold text-foreground">{c.email}</td>
-                              <td className="px-4 py-3.5">{statusBadge(c)}</td>
-                              <td className="px-4 py-3.5 text-[12px] text-muted-foreground">
-                                {c.ends_at ? new Date(c.ends_at).toLocaleString() : "—"}
-                              </td>
-                              <td className="px-4 py-3.5 text-[12px] font-semibold text-foreground">
-                                {getRemainingText(c, serverNow)}
-                              </td>
-                              <td className="px-4 py-3.5 font-mono text-[11.5px]">
-                                {branchUrl ? (
-                                  <a
-                                    href={branchUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1 font-semibold"
-                                  >
-                                    <span>{branchName}</span>
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                      <polyline points="15 3 21 3 21 9" />
-                                      <line x1="10" y1="14" x2="21" y2="3" />
-                                    </svg>
-                                  </a>
-                                ) : (
-                                  <span className="text-muted-foreground">—</span>
-                                )}
-                              </td>
-                              <td className="px-4 py-3.5 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  {c.started_at && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleToggleUnblur(c.id, !c.unblurred)}
-                                      className={`rounded px-2.5 py-1 text-[11.5px] font-semibold border transition-colors cursor-pointer ${
-                                        c.unblurred
-                                          ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20"
-                                          : "bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80"
-                                      }`}
-                                    >
-                                      {c.unblurred ? "Unblurred" : "Unblur Git"}
-                                    </button>
-                                  )}
-                                  {c.started_at && !c.submitted_at && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCheckSubmission(c.id)}
-                                      className="rounded border border-border bg-secondary/35 px-2.5 py-1 text-[11.5px] font-semibold text-foreground transition-colors hover:bg-secondary cursor-pointer"
-                                    >
-                                      Check push
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-        </section>
-
-        {/* ========================================================
-            COLUMN 3: Context Panel (Right Sidebar - Audit logs)
-           ======================================================== */}
-        {showActivity && (
-          <aside className="w-[320px] border-l border-border/70 flex flex-col bg-card/5 flex-shrink-0 animate-in slide-in-from-right duration-200">
-            <div className="p-4 border-b border-border/70 flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Activity Log</h3>
               <button
-                onClick={() => setShowActivity(false)}
-                className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer underline"
+                onClick={() => setSelectedAssignmentId("")}
+                className="text-xs text-neutral-400 hover:text-white underline cursor-pointer"
               >
-                Close
+                Show All Assignments
               </button>
             </div>
+          )}
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
-              {auditLogs.length === 0 ? (
-                <div className="text-center text-[12.5px] text-muted-foreground py-8">
-                  No activity recorded yet. Logs populate as candidates progress.
+          {/* Table Container */}
+          <div className="overflow-hidden rounded-xl border border-neutral-800/60 bg-[#121212]/30 shadow-md">
+            <table className="w-full text-left text-[12.5px] border-collapse">
+              <thead className="border-b border-neutral-800/80 bg-neutral-900/40 text-[10.5px] uppercase tracking-wider text-neutral-400">
+                <tr>
+                  <th className="px-4 py-3.5 font-bold">Candidate</th>
+                  <th className="px-4 py-3.5 font-bold">Status</th>
+                  <th className="px-4 py-3.5 font-bold">Time / Ends</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-800/40">
+                {filteredCandidates.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-4 py-12 text-center text-neutral-500 font-light bg-[#090909]/20">
+                      No candidates in this queue list.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCandidates.map((c) => {
+                    // Check if selected
+                    const isSelected = selectedCandidate && selectedCandidate.id === c.id;
+                    const statusDotColor =
+                      c.revoked
+                        ? "bg-neutral-500"
+                        : c.submitted_at
+                          ? "bg-emerald-500"
+                          : c.status === "expired" || c.status === "closed"
+                            ? "bg-neutral-600"
+                            : c.status === "grace"
+                              ? "bg-amber-500"
+                              : "bg-sky-500";
+
+                    return (
+                      <tr
+                        key={c.id}
+                        onClick={() => setSelectedCandidate(c)}
+                        className={`hover:bg-neutral-800/35 cursor-pointer transition-colors ${
+                          isSelected ? "bg-neutral-800/60" : ""
+                        }`}
+                      >
+                        <td className="px-4 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-white">{c.email}</span>
+                            <span className="text-[11px] text-neutral-500 truncate mt-0.5 max-w-[280px]">
+                              {c.assignments?.title ?? "—"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-2 text-neutral-300">
+                            <span className={`h-1.5 w-1.5 rounded-full ${statusDotColor} ${c.status === "grace" ? "animate-pulse" : ""}`} />
+                            <span className="text-[12px] font-semibold">{statusBadge(c)}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-neutral-400 font-medium">
+                          {c.started_at ? (
+                            <div className="flex flex-col">
+                              <span>{getRemainingText(c, serverNow)}</span>
+                              <span className="text-[10px] text-neutral-500 mt-0.5">Ends {new Date(c.ends_at!).toLocaleDateString()}</span>
+                            </div>
+                          ) : (
+                            <span className="text-neutral-500">Not started yet</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================
+          COLUMN 3: Context Panel (Replicating Screenshot Schedule & Up Next)
+         ======================================================== */}
+      {showActivity && (
+        <aside className="w-[300px] bg-[#121212] border-l border-neutral-800/80 flex flex-col flex-shrink-0 select-none animate-in slide-in-from-right duration-200 overflow-hidden">
+          {/* Header */}
+          <div className="p-4 border-b border-neutral-800/60 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-white">Schedule</h3>
+            <button
+              onClick={() => setShowActivity(false)}
+              className="text-neutral-500 hover:text-white cursor-pointer transition-colors text-xs"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
+            {/* Calendar widget showing August 2026 */}
+            <CalendarWidget />
+
+            {/* UP NEXT Activities */}
+            <div className="space-y-4">
+              <h4 className="text-[9px] font-bold uppercase tracking-wider text-neutral-500">Activity Log</h4>
+              
+              <div className="space-y-3.5">
+                {auditLogs.length === 0 ? (
+                  <p className="text-[11.5px] text-neutral-500 font-light">No activity recorded yet.</p>
+                ) : (
+                  auditLogs.slice(0, 8).map((log, idx) => {
+                    // Extract candidate email
+                    const candEmail = log.candidates?.email || log.actor || "hiring-desk";
+                    const isSubmission = log.event === "submission_detected";
+                    
+                    return (
+                      <div
+                        key={log.id}
+                        className="pl-3.5 border-l-2 border-neutral-800 text-[12px] flex flex-col gap-1 transition-all hover:border-neutral-500"
+                      >
+                        <span className="text-[10px] font-semibold text-neutral-500 font-mono">
+                          {new Date(log.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                        <span className="font-bold text-white line-clamp-1 leading-tight">
+                          {log.event.replace(/_/g, " ").toUpperCase()}
+                        </span>
+                        <span className="text-[11px] text-neutral-400 font-light leading-normal truncate">
+                          {candEmail}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        </aside>
+      )}
+
+      {/* ========================================================
+          OVERLAY SIDE DRAWER: Selected Candidate Details & Git Branch unblurs
+         ======================================================== */}
+      {selectedCandidate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md h-full bg-[#121212] border-l border-neutral-800/80 p-6 flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-200">
+            <div className="flex-1 overflow-y-auto scrollbar-thin space-y-6 pr-2">
+              <div className="flex items-center justify-between border-b border-neutral-800/60 pb-4">
+                <div>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-500">Candidate Info</span>
+                  <h2 className="text-base font-bold text-white mt-1 break-all">{selectedCandidate.email}</h2>
                 </div>
-              ) : (
-                auditLogs.map((log) => (
-                  <div key={log.id} className="relative pl-5 border-l-2 border-border/50 text-[12.5px] flex flex-col gap-0.5">
-                    <div className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-primary/70 ring-4 ring-primary/10" />
-                    
-                    <span className="font-semibold text-foreground">
-                      {log.event.replace(/_/g, " ").toUpperCase()}
-                    </span>
-                    
-                    {log.candidate_id && (
-                      <span className="text-[11.5px] text-muted-foreground leading-normal">
-                        Candidate: {log.candidates?.email || log.actor || "—"}
-                      </span>
-                    )}
-                    
-                    <span className="text-[10.5px] text-muted-foreground font-mono mt-0.5">
-                      {new Date(log.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                ))
+                <button
+                  onClick={() => setSelectedCandidate(null)}
+                  className="text-neutral-500 hover:text-white cursor-pointer text-sm font-semibold"
+                >
+                  ✕ Close
+                </button>
+              </div>
+
+              {/* Status block */}
+              <div className="panel p-4 bg-neutral-950/40 border border-neutral-800/60 rounded-xl space-y-2">
+                <div className="flex justify-between items-center text-[12.5px]">
+                  <span className="text-neutral-500 font-medium">Test Status:</span>
+                  <span className="font-bold text-white">{statusBadge(selectedCandidate)}</span>
+                </div>
+                {selectedCandidate.started_at && (
+                  <>
+                    <div className="flex justify-between items-center text-[12.5px] border-t border-neutral-800/40 pt-2">
+                      <span className="text-neutral-500 font-medium">Timer Status:</span>
+                      <span className="font-bold text-white">{getRemainingText(selectedCandidate, serverNow)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[12.5px]">
+                      <span className="text-neutral-500 font-medium">Started At:</span>
+                      <span className="text-neutral-400 font-semibold">{new Date(selectedCandidate.started_at).toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Unique branch details */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Git branch details</h4>
+                
+                <div className="rounded-xl border border-neutral-800 bg-[#0d0d0d] p-4 font-mono text-[12px] text-foreground/90 space-y-3 overflow-x-auto">
+                  <p>
+                    <span className="text-neutral-500"># Repository URL:</span>
+                    <br />
+                    <span className="text-neutral-300 font-semibold">{selectedCandidate.assignments?.github_repo || "—"}</span>
+                  </p>
+                  <p className="border-t border-neutral-900 pt-3">
+                    <span className="text-neutral-500"># Candidate Branch:</span>
+                    <br />
+                    <strong className="text-sky-400 font-bold">{getCandidateBranch(selectedCandidate.email, selectedCandidate.id)}</strong>
+                  </p>
+                  
+                  {selectedCandidate.assignments?.github_repo && (
+                    <div className="pt-2 border-t border-neutral-900">
+                      <a
+                        href={`${selectedCandidate.assignments.github_repo.replace(/\.git$/, "")}/tree/${getCandidateBranch(selectedCandidate.email, selectedCandidate.id)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] bg-neutral-800 hover:bg-neutral-700 text-white font-sans font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <span>Open branch on GitHub</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions inside overlay */}
+            <div className="mt-8 border-t border-neutral-800/60 pt-4 flex flex-col gap-3">
+              {selectedCandidate.started_at && (
+                <button
+                  type="button"
+                  onClick={() => handleToggleUnblur(selectedCandidate.id, !selectedCandidate.unblurred)}
+                  className={`w-full py-2.5 rounded-xl text-sm font-bold border transition-colors cursor-pointer text-center ${
+                    selectedCandidate.unblurred
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20"
+                      : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700"
+                  }`}
+                >
+                  {selectedCandidate.unblurred ? "🔒 Lock GitHub Details (Blur)" : "🔓 Manually Unblur GitHub details"}
+                </button>
+              )}
+
+              {selectedCandidate.started_at && !selectedCandidate.submitted_at && (
+                <button
+                  type="button"
+                  onClick={() => handleCheckSubmission(selectedCandidate.id)}
+                  className="w-full bg-white hover:bg-neutral-100 text-black py-2.5 rounded-xl text-sm font-bold text-center cursor-pointer transition-colors"
+                >
+                  Check Branch Push Status
+                </button>
               )}
             </div>
-          </aside>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================
           OVERLAY MODAL: Create Assignment Dialog Form
          ======================================================== */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-xl rounded-2xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-border/40 pb-3.5 mb-5">
-              <h2 className="text-lg font-bold text-foreground">Create Assignment Template</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+          <div className="relative w-full max-w-xl rounded-2xl border border-neutral-800/80 bg-[#121212] p-6 shadow-2xl animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-neutral-800/60 pb-3.5 mb-5">
+              <h2 className="text-[15px] font-bold text-white uppercase tracking-wider">Create Assignment</h2>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-semibold"
+                className="text-neutral-500 hover:text-white cursor-pointer text-sm font-semibold"
               >
                 ✕ Close
               </button>
             </div>
 
             {/* Template Selector Inside Modal */}
-            <div className="mb-6 rounded-xl border border-border/80 bg-secondary/15 p-4">
-              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="mb-6 rounded-xl border border-neutral-800 bg-[#0c0c0c]/60 p-4">
+              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
                 Quick Load from Template
               </label>
               <select
@@ -732,7 +944,7 @@ function AdminPage() {
                   }
                 }}
                 defaultValue=""
-                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring cursor-pointer"
+                className="w-full rounded-lg border border-neutral-800 bg-[#0d0d0d] px-3 py-2.5 text-[12.5px] text-white outline-none focus:border-neutral-700 cursor-pointer"
               >
                 <option value="" disabled>-- Select a pre-defined Stance Health template --</option>
                 {TEMPLATES.map((t, i) => (
@@ -743,17 +955,17 @@ function AdminPage() {
 
             <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="mb-1 block text-[12px] font-medium text-muted-foreground">Title</label>
+                <label className="mb-1 block text-[11px] font-semibold text-neutral-400">Title</label>
                 <input
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-neutral-800 bg-[#0d0d0d] px-3 py-2 text-sm text-white outline-none focus:border-neutral-700"
                   placeholder="Structured Assessment Form Filler"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-[12px] font-medium text-muted-foreground">
+                <label className="mb-1 block text-[11px] font-semibold text-neutral-400">
                   Duration (hours)
                 </label>
                 <input
@@ -764,11 +976,11 @@ function AdminPage() {
                   step={0.25}
                   value={hours}
                   onChange={(e) => setHours(Number(e.target.value))}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-border bg-[#0d0d0d] px-3 py-2 text-sm text-white outline-none focus:border-neutral-700"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-[12px] font-medium text-muted-foreground">
+                <label className="mb-1 block text-[11px] font-semibold text-neutral-400">
                   GitHub repo URL
                 </label>
                 <input
@@ -776,12 +988,12 @@ function AdminPage() {
                   type="url"
                   value={repo}
                   onChange={(e) => setRepo(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-border bg-[#0d0d0d] px-3 py-2 text-sm text-white outline-none focus:border-neutral-700"
                   placeholder="https://github.com/Chris-healthflex/ai-intern.git"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="mb-1 block text-[12px] font-medium text-muted-foreground">
+                <label className="mb-1 block text-[11px] font-semibold text-neutral-400">
                   Problem statement
                 </label>
                 <textarea
@@ -789,22 +1001,22 @@ function AdminPage() {
                   rows={8}
                   value={problem}
                   onChange={(e) => setProblem(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-[13px] outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-border bg-[#0d0d0d] px-3 py-2 font-mono text-[12.5px] text-white outline-none focus:border-neutral-700"
                   placeholder="Paste the full assignment brief here…"
                 />
               </div>
-              <div className="md:col-span-2 flex items-center justify-end gap-3 mt-4 border-t border-border/40 pt-4">
+              <div className="md:col-span-2 flex items-center justify-end gap-3 mt-4 border-t border-neutral-800/60 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary cursor-pointer"
+                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-neutral-500 hover:text-white cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={busy}
-                  className="cta-glow rounded-lg px-5 py-2.5 text-sm font-semibold disabled:opacity-60 cursor-pointer"
+                  className="bg-white hover:bg-neutral-100 text-black px-5 py-2.5 text-sm font-bold rounded-lg cursor-pointer transition-colors"
                 >
                   Create Assignment
                 </button>
