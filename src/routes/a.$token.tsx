@@ -30,6 +30,15 @@ function formatRemaining(ms: number): string {
   return `${hh}:${mm}:${ss}`;
 }
 
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-8 border-t border-border/60 pt-6">
+      <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
 // ─── Shared Theme Toggle Button ───
 
 function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTheme: () => void }) {
@@ -97,7 +106,7 @@ function ProblemStatement({ text }: { text: string }) {
     flushList(String(i));
     
     // Check if it is a main title
-    if (line.startsWith("Assignment:") || line.startsWith("Problem Statement") || line.startsWith("Core Requirements") || line.startsWith("Deliverables") || line.startsWith("Constraints")) {
+    if (line.startsWith("Assignment:") || line.startsWith("Problem Statement") || line.startsWith("Core Requirements") || line.startsWith("Deliverables") || line.startsWith("Constraints") || line.startsWith("STACK REQUIREMENTS:") || line.startsWith("AGENT PIPELINE") || line.startsWith("STRUCTURED OUTPUT SCHEMA") || line.startsWith("API ENDPOINTS:") || line.startsWith("MONGODB COLLECTIONS:") || line.startsWith("DELIVERABLES:")) {
       items.push(
         <div key={i} className="mt-8 border-b border-border/70 pb-2">
           <p className="text-[15px] font-bold tracking-tight text-foreground uppercase">
@@ -138,6 +147,134 @@ function ProblemStatement({ text }: { text: string }) {
   flushList("end");
 
   return <div className="space-y-1.5">{items}</div>;
+}
+
+// ─── How It Works 9: Interactive step switcher with sliding background indicator pill ───
+
+function InteractiveBrief({ text }: { text: string }) {
+  const [activeTab, setActiveTab] = useState(0);
+
+  const steps = [
+    {
+      id: "overview",
+      label: "Overview & Stack",
+      icon: "📋",
+      title: "Assessment Overview & Requirements",
+      content: `Clinicians at Stance Health currently dictate or type free-text notes after assessments. These notes are messy, incomplete, use inconsistent terminology, and mix objective numbers with subjective observations.
+
+Your task is to build a production-style backend service that turns raw clinician notes (or simulated voice transcripts) into a strictly structured assessment form that can be directly saved into MongoDB and used by downstream clinical tools.
+
+STACK REQUIREMENTS:
+- Python + FastAPI
+- Pydantic for structured output
+- LangChain or LangGraph for the agent flow
+- MongoDB for storage
+- Git`
+    },
+    {
+      id: "requirements",
+      label: "Core Pipeline & Schema",
+      icon: "⚙️",
+      title: "Agent Pipeline & Pydantic Schema",
+      content: `AGENT PIPELINE (LangGraph preferred, LangChain acceptable):
+- Parse the note.
+- Map content into a multi-section structured schema.
+- Detect missing or ambiguous fields and flag them with confidence scores.
+- Never invent numbers or clinical facts that are not present in the input.
+- Produce a short human-readable summary of what was extracted + what is still missing.
+
+STRUCTURED OUTPUT SCHEMA (Strict Pydantic Validation):
+You must define and strictly validate a schema that covers at least these sections:
+1. Patient identifiers / session metadata
+2. Subjective: chief complaint, pain history (location, intensity VAS, aggravating/relieving factors, onset)
+3. Objective: ROM values, strength grades or force numbers, gait/movement quality observations, special tests
+4. Assessment / clinical impression
+5. Plan: exercises prescribed, load/sets/reps if mentioned, follow-up recommendations, red flags
+6. Extraction metadata: confidence per section, list of unresolved ambiguities, source spans (optional but valued)`
+    },
+    {
+      id: "api",
+      label: "API Endpoints & DB",
+      icon: "🗄️",
+      title: "FastAPI Endpoints & MongoDB",
+      content: `API ENDPOINTS:
+- POST /assessments/parse ➡️ Accepts raw note + optional patient_id ➡️ Returns the fully validated structured object + summary + flags.
+- POST /assessments ➡️ Saves the structured result to MongoDB.
+- GET /assessments/{id} and a simple list endpoint by patient_id.
+- Proper error handling, status codes, and input validation.
+
+MONGODB COLLECTIONS:
+- Design a sensible collection schema for the structured assessments.
+- Support basic querying (by patient, by date range).`
+    },
+    {
+      id: "deliverables",
+      label: "Intern Deliverables",
+      icon: "📦",
+      title: "What you must submit",
+      content: `DELIVERABLES:
+1. Working FastAPI service with the endpoints above.
+2. LangGraph / LangChain agent code.
+3. Pydantic models for the full structured form.
+4. MongoDB models / connection code.
+5. At least 6–8 synthetic test notes (good, incomplete, contradictory, noisy) + a simple evaluation script or notebook showing schema compliance and extraction quality.
+6. Short design document (1–2 pages) covering:
+   * Agent graph design decisions
+   * How you prevent hallucination of numbers
+   * Failure modes you observed and how you handled them
+   * What you would improve with more time`
+    }
+  ];
+
+  // Fallback to normal parsed text if it doesn't look like Stance Health
+  const isStanceHealth = text.toLowerCase().includes("clinical assessment") || text.toLowerCase().includes("stance health");
+
+  if (!isStanceHealth) {
+    return <ProblemStatement text={text} />;
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Sliding Indicator Pill Switcher (How It Works 9 layout) */}
+      <div className="relative flex rounded-xl bg-secondary/45 p-1 border border-border/45 overflow-x-auto scrollbar-none select-none">
+        
+        {/* Sliding background pill */}
+        <div 
+          className="absolute top-1 bottom-1 rounded-lg bg-background shadow-sm border border-border/40 transition-all duration-300"
+          style={{
+            left: `${activeTab * 25 + 0.25}%`,
+            width: "24.5%",
+          }}
+        />
+
+        {steps.map((s, idx) => (
+          <button
+            key={s.id}
+            onClick={() => setActiveTab(idx)}
+            className={`relative z-10 flex-1 py-2.5 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors duration-200 cursor-pointer ${
+              activeTab === idx ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+            style={{ width: "25%", minWidth: "120px" }}
+          >
+            <span>{s.icon}</span>
+            <span className="hidden sm:inline">{s.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Animated Detail Panel */}
+      <div className="panel p-6 sm:p-8 border border-border bg-card/40 backdrop-blur-sm rounded-2xl shadow-md animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-2 border-b border-border/30 pb-3">
+          <span>{steps[activeTab]!.icon}</span>
+          <span>{steps[activeTab]!.title}</span>
+        </h3>
+        
+        <div className="whitespace-pre-wrap leading-relaxed font-light text-[14px]">
+          <ProblemStatement text={steps[activeTab]!.content} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── Beautiful customized landing page (matching index landing styles) ───
@@ -413,7 +550,7 @@ function QuestionPage({
   );
 }
 
-// ─── Timed assignment view (after timer starts) ───────────────────────────────
+// ─── Timed assignment view (after timer starts - with sliding steps!) ───────────────────────────────
 
 function TimedPage({
   view,
@@ -433,7 +570,11 @@ function TimedPage({
 
   const targetIso = view.status === "grace" ? view.graceEndsAt : view.endsAt;
   const targetMs = targetIso ? new Date(targetIso).getTime() : 0;
-  const serverOffset = view.serverNow ? new Date(view.serverNow).getTime() - Date.now() : 0;
+  const serverOffset = useMemo(() => {
+    if (!view.serverNow) return 0;
+    return new Date(view.serverNow).getTime() - Date.now();
+  }, [view.serverNow]);
+
   const remaining = targetMs - (now + serverOffset);
   const isGrace = view.status === "grace";
   const isSubmitted = view.status === "submitted";
@@ -590,13 +731,12 @@ function TimedPage({
           </div>
         )}
 
+        {/* How It Works 9: Interactive Problem Statement Switcher */}
         <section className="panel mt-10 p-6 sm:p-8 border border-border bg-card/40 backdrop-blur-sm shadow-md rounded-2xl">
-          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2.5">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2.5 mb-6">
             Problem statement
           </h2>
-          <div className="mt-4">
-            <ProblemStatement text={view.problemStatement ?? ""} />
-          </div>
+          <InteractiveBrief text={view.problemStatement ?? ""} />
         </section>
 
         <p className="mt-8 text-center text-[12px] text-muted-foreground">
@@ -667,7 +807,6 @@ function CandidatePage() {
           openAssignment({ data: { token } })
             .then((cv) => {
               if (!cv.ok) return toError(cv.reason);
-              setView(cv);
               setView(cv);
               setPhase("timed");
             })
