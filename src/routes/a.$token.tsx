@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useState, useMemo, type ComponentType } from "react";
 import {
   peekAssignment,
   openAssignment,
@@ -357,7 +357,12 @@ function TimedPage({
 
   const targetIso = view.status === "grace" ? view.graceEndsAt : view.endsAt;
   const targetMs = targetIso ? new Date(targetIso).getTime() : 0;
-  const serverOffset = view.serverNow ? new Date(view.serverNow).getTime() - Date.now() : 0;
+  
+  const serverOffset = useMemo(() => {
+    if (!view.serverNow) return 0;
+    return new Date(view.serverNow).getTime() - Date.now();
+  }, [view.serverNow]);
+
   const remaining = targetMs - (now + serverOffset);
   const isGrace = view.status === "grace";
   const isSubmitted = view.status === "submitted";
