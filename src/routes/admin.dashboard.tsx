@@ -11,6 +11,7 @@ import {
   listCandidates,
   inviteCandidates,
   checkSubmission,
+  toggleUnblurCandidate,
 } from "@/lib/admin.functions";
 
 interface Template {
@@ -122,6 +123,7 @@ type CandidateRow = {
   grace_ends_at: string | null;
   submitted_at: string | null;
   revoked: boolean;
+  unblurred?: boolean;
   invite_sent_at: string | null;
   assignments?: { title: string; github_repo: string; duration_hours: number } | null;
 };
@@ -270,6 +272,19 @@ function AdminPage() {
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Check failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleToggleUnblur(candidateId: string, unblurred: boolean) {
+    setBusy(true);
+    setError(null);
+    try {
+      await toggleUnblurCandidate({ data: { candidateId, unblurred } });
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Toggle unblur failed");
     } finally {
       setBusy(false);
     }
@@ -595,15 +610,30 @@ function AdminPage() {
                           )}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          {c.started_at && !c.submitted_at && (
-                            <button
-                              type="button"
-                              onClick={() => handleCheckSubmission(c.id)}
-                              className="rounded border border-border bg-secondary/35 px-2.5 py-1 text-[11.5px] font-medium text-foreground transition-colors hover:bg-secondary"
-                            >
-                              Check branch push
-                            </button>
-                          )}
+                          <div className="flex items-center justify-end gap-2">
+                            {c.started_at && (
+                              <button
+                                type="button"
+                                onClick={() => handleToggleUnblur(c.id, !c.unblurred)}
+                                className={`rounded px-2.5 py-1 text-[11.5px] font-medium border transition-colors ${
+                                  c.unblurred
+                                    ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20"
+                                    : "bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/80"
+                                }`}
+                              >
+                                {c.unblurred ? "Unblurred" : "Unblur Git"}
+                              </button>
+                            )}
+                            {c.started_at && !c.submitted_at && (
+                              <button
+                                type="button"
+                                onClick={() => handleCheckSubmission(c.id)}
+                                className="rounded border border-border bg-secondary/35 px-2.5 py-1 text-[11.5px] font-medium text-foreground transition-colors hover:bg-secondary"
+                              >
+                                Check branch push
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

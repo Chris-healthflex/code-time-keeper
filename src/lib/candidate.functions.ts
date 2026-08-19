@@ -65,6 +65,7 @@ export interface CandidateView {
   title?: string;
   problemStatement?: string;
   githubRepo?: string;
+  unblurred?: boolean;
   status?: "in_progress" | "grace" | "closed" | "submitted";
   serverNow?: string;
   endsAt?: string;
@@ -172,6 +173,7 @@ export const openAssignment = createServerFn({ method: "POST" })
         title: assignment.title,
         problemStatement: assignment.problem_statement,
         githubRepo: assignment.github_repo,
+        unblurred: Boolean((candidate as any).unblurred),
         serverNow: now.toISOString(),
       };
     }
@@ -222,6 +224,7 @@ export const openAssignment = createServerFn({ method: "POST" })
       title: assignment.title,
       problemStatement: assignment.problem_statement,
       githubRepo: assignment.github_repo,
+      unblurred: Boolean((candidate as any).unblurred),
       serverNow: now.toISOString(),
       ...(endsAt ? { endsAt: endsAt.toISOString() } : {}),
       ...(graceEndsAt ? { graceEndsAt: graceEndsAt.toISOString() } : {}),

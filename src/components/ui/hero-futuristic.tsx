@@ -6,23 +6,37 @@ const TITLE_WORDS = ['Timed', 'assignments.', 'Zero', 'tampering.'];
 const SUBTITLE =
   'One encrypted link per candidate. The clock starts server-side the moment they open it — and closes itself exactly on time.';
 
-export function HeroFuturistic() {
+interface HeroProps {
+  titleWords?: string[];
+  subtitle?: string;
+  ctaText?: string;
+  ctaTo?: string;
+  onCtaClick?: () => void;
+}
+
+export function HeroFuturistic({
+  titleWords = TITLE_WORDS,
+  subtitle = SUBTITLE,
+  ctaText = "Go to dashboard →",
+  ctaTo = "/auth",
+  onCtaClick,
+}: HeroProps = {}) {
   const [visibleWords, setVisibleWords] = useState(0);
   const [subtitleVisible, setSubtitleVisible] = useState(false);
   const [delays, setDelays] = useState<number[]>([]);
 
   useEffect(() => {
-    setDelays(TITLE_WORDS.map(() => Math.random() * 0.07));
-  }, []);
+    setDelays(titleWords.map(() => Math.random() * 0.07));
+  }, [titleWords]);
 
   useEffect(() => {
-    if (visibleWords < TITLE_WORDS.length) {
+    if (visibleWords < titleWords.length) {
       const t = setTimeout(() => setVisibleWords((v) => v + 1), 480);
       return () => clearTimeout(t);
     }
     const t = setTimeout(() => setSubtitleVisible(true), 600);
     return () => clearTimeout(t);
-  }, [visibleWords]);
+  }, [visibleWords, titleWords]);
 
   return (
     <div className="relative h-svh overflow-hidden bg-black">
@@ -76,27 +90,40 @@ export function HeroFuturistic() {
       {/* Subtitle + CTA — bottom area */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center pb-16 px-10">
         <p
-          className={`max-w-sm text-center text-sm font-medium leading-relaxed normal-case sm:text-base ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
+          className={`max-w-md text-center text-sm font-medium leading-relaxed normal-case sm:text-base ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
           style={{
             opacity: subtitleVisible ? undefined : 0,
             color: 'rgba(255,255,255,0.85)',
             textShadow: '0 2px 20px rgba(0,0,0,1), 0 0 60px rgba(0,0,0,0.9)',
           }}
         >
-          {SUBTITLE}
+          {subtitle}
         </p>
 
         <div className="pointer-events-auto mt-6">
-          <Link
-            to="/auth"
-            className={`inline-flex rounded-full border border-white/25 bg-white px-6 py-2.5 text-sm font-medium text-black shadow-sm transition-opacity hover:opacity-90 normal-case ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
-            style={{
-              opacity: subtitleVisible ? undefined : 0,
-              animationDelay: '0.25s',
-            }}
-          >
-            Go to dashboard →
-          </Link>
+          {onCtaClick ? (
+            <button
+              onClick={onCtaClick}
+              className={`inline-flex rounded-full border border-white/25 bg-white px-6 py-2.5 text-sm font-medium text-black shadow-sm transition-opacity hover:opacity-90 normal-case ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
+              style={{
+                opacity: subtitleVisible ? undefined : 0,
+                animationDelay: '0.25s',
+              }}
+            >
+              {ctaText}
+            </button>
+          ) : (
+            <Link
+              to={ctaTo as "/"}
+              className={`inline-flex rounded-full border border-white/25 bg-white px-6 py-2.5 text-sm font-medium text-black shadow-sm transition-opacity hover:opacity-90 normal-case ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
+              style={{
+                opacity: subtitleVisible ? undefined : 0,
+                animationDelay: '0.25s',
+              }}
+            >
+              {ctaText}
+            </Link>
+          )}
         </div>
       </div>
     </div>

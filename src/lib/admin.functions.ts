@@ -306,3 +306,23 @@ export const inviteAdmin = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+export const toggleUnblurCandidate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ candidateId: z.string().uuid(), unblurred: z.boolean() }).parse(data))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("candidates")
+      .update({ unblurred: data.unblurred } as any)
+      .eq("id", data.candidateId);
+    if (error) throw new Error(error.message);
+    
+    await supabaseAdmin.from("audit_logs").insert({
+      candidate_id: data.candidateId,
+      actor: context.userId,
+      event: data.unblurred ? "git_unblurred_manually" : "git_blurred_manually",
+    });
+    return { ok: true };
+  });

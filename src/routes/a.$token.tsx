@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ComponentType } from "react";
 import {
   peekAssignment,
   openAssignment,
@@ -19,26 +19,26 @@ export const Route = createFileRoute("/a/$token")({
 function formatRemaining(ms: number): string {
   if (ms <= 0) return "00:00:00";
   const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
-}
+  const hours = Math.floor(totalSec / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
+  const seconds = totalSec % 60;
 
-// ─── Question preview (before timer starts) ───────────────────────────────────
+  const hh = String(hours).padStart(2, "0");
+  const mm = String(minutes).padStart(2, "0");
+  const ss = String(seconds).padStart(2, "0");
+
+  return `${hh}:${mm}:${ss}`;
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mt-8">
-      <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {title}
-      </h3>
-      {children}
-    </div>
+    <section className="mt-8 border-t border-border/60 pt-6">
+      <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">{title}</h3>
+      <div className="mt-3">{children}</div>
+    </section>
   );
 }
 
-/** Renders the problem statement with light structure: bold headers, bullet lists */
 function ProblemStatement({ text }: { text: string }) {
   const lines = text.split("\n");
   const items: React.ReactNode[] = [];
@@ -59,9 +59,9 @@ function ProblemStatement({ text }: { text: string }) {
     listBuf = [];
   };
 
-  lines.forEach((raw, i) => {
-    const line = raw.trim();
-    if (!line) {
+  lines.forEach((line, i) => {
+    const trimmed = line.trim();
+    if (trimmed === "") {
       flushList(String(i));
       return;
     }
@@ -89,10 +89,39 @@ function ProblemStatement({ text }: { text: string }) {
       );
     }
   });
+
   flushList("end");
 
-  return <div>{items}</div>;
+  return <div className="space-y-1.5">{items}</div>;
 }
+
+// ─── Beautiful customized landing page (matching index landing styles) ───
+
+function ClientOnlyHero({ email, onStart }: { email: string | undefined; onStart: () => void }) {
+  const [Hero, setHero] = useState<ComponentType<any> | null>(null);
+
+  useEffect(() => {
+    import("@/components/ui/hero-futuristic").then((m) => {
+      setHero(() => m.HeroFuturistic);
+    });
+  }, []);
+
+  if (!Hero) return <div className="h-svh bg-black" />;
+
+  const emailPrefix = email ? email.split("@")[0] : "there";
+  const titleWords = ["Hey,", emailPrefix || "there", "welcome", "to", "stance", "hiring"];
+
+  return (
+    <Hero
+      titleWords={titleWords}
+      subtitle="We are excited to have you join our team. Click below to enter your secure candidate assignments dashboard and preview your timed task."
+      ctaText="Let's dive in →"
+      onCtaClick={onStart}
+    />
+  );
+}
+
+// ─── Pre-start assignment instructions panel (with Terms Popup) ──────────────────────
 
 function QuestionPage({
   preview,
@@ -103,6 +132,9 @@ function QuestionPage({
   onStart: () => void;
   starting: boolean;
 }) {
+  const [showTerms, setShowTerms] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border/70 px-6 py-4">
@@ -116,8 +148,8 @@ function QuestionPage({
         {/* Callout */}
         <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/5 px-5 py-4">
           <p className="text-[13px] font-medium text-amber-700 dark:text-amber-400">
-            ⏱ Your {preview.durationHours}-hour clock starts the moment you click{" "}
-            <span className="font-semibold">Start Assignment</span>. Read the full brief first.
+            ⏱ Your {preview.durationHours}-hour clock starts only after clicking{" "}
+            <span className="font-semibold">Reveal Question</span> and accepting terms. Read the instructions first.
           </p>
         </div>
 
@@ -131,15 +163,30 @@ function QuestionPage({
             {preview.durationHours}h timed
           </span>
           <span className="text-muted-foreground">Submit to:</span>
-          <a
-            href={preview.githubRepo}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-foreground transition-colors hover:bg-secondary"
-          >
-            {preview.githubRepo?.replace(/^https?:\/\//, "")}
-          </a>
+          <span className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-muted-foreground select-none filter blur-[3.5px]">
+            github.com/Chris-healthflex/ai-intern
+          </span>
         </div>
+
+        {/* Unique Branch Blurring Instructions */}
+        {preview.email && preview.candidateId && (
+          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-5 sm:px-8">
+            <h3 className="text-[13px] font-semibold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
+              Your Unique Branch
+            </h3>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground">
+              Your dedicated candidate branch is currently locked:
+            </p>
+            <div className="mt-3 select-none filter blur-[4px] rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto">
+              <p># Your unique branch: candidate/chris-thomas-healthflex-in-e419</p>
+              <p># How to push to your branch:</p>
+              <p>git checkout -b candidate/chris-thomas-healthflex-in-e419</p>
+            </div>
+            <p className="mt-3 text-[12px] text-muted-foreground">
+              🔒 GitHub repository and branch details are blurred. They will unlock when your assignment timer is complete or when your admin manually unblurs them.
+            </p>
+          </div>
+        )}
 
         {/* Problem statement */}
         <div className="panel mt-8 px-6 py-7 sm:px-8">
@@ -151,33 +198,13 @@ function QuestionPage({
           </div>
         </div>
 
-        {/* Unique Branch and Git Instructions */}
-        {preview.email && preview.candidateId && (
-          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-5 sm:px-8">
-            <h3 className="text-[13px] font-semibold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
-              Your Unique Branch
-            </h3>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground">
-              You must push your code to your dedicated candidate branch in the repository:
-            </p>
-            <div className="mt-3 rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto">
-              <p><span className="text-muted-foreground"># Your unique branch:</span> <strong className="text-sky-700 dark:text-sky-400 font-semibold">{getCandidateBranch(preview.email, preview.candidateId)}</strong></p>
-              <p><span className="text-muted-foreground"># How to push to your branch:</span></p>
-              <p className="text-muted-foreground">git checkout -b {getCandidateBranch(preview.email, preview.candidateId)}</p>
-              <p className="text-muted-foreground">git add .</p>
-              <p className="text-muted-foreground">git commit -m "feat: complete assignment"</p>
-              <p className="text-muted-foreground">git push -u origin {getCandidateBranch(preview.email, preview.candidateId)}</p>
-            </div>
-          </div>
-        )}
-
         {/* Deliverables reminder */}
         <Section title="Before you start">
           <ul className="space-y-2">
             {[
-              "Read the full brief above carefully — the clock starts when you click the button below.",
+              "Read the full brief above carefully — the clock starts when you reveal the question.",
               `You have ${preview.durationHours} hours from that moment. After time is up, you have a 10-minute grace window to push your final commit.`,
-              `Push your code to your unique branch shown above. Pushes to main or other branches will not be recognized.`,
+              `Push your code to your unique branch. Pushes to main or other branches will not be recognized.`,
               "Do not close this tab during the assignment — it polls the server and keeps your session alive.",
             ].map((t, i) => (
               <li key={i} className="flex gap-3 text-[13.5px] leading-relaxed text-foreground/90">
@@ -193,24 +220,68 @@ function QuestionPage({
         {/* CTA */}
         <div className="mt-10 flex flex-col items-center gap-3">
           <button
-            onClick={onStart}
-            disabled={starting}
-            className="flex min-w-[260px] items-center justify-center gap-2 rounded-full bg-white px-8 py-3.5 text-[14px] font-semibold text-black shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+            onClick={() => setShowTerms(true)}
+            className="flex min-w-[260px] items-center justify-center gap-2 rounded-full bg-white px-8 py-3.5 text-[14px] font-semibold text-black shadow-sm transition-opacity hover:opacity-90"
           >
-            {starting ? (
-              <>
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
-                Starting…
-              </>
-            ) : (
-              <>Start my {preview.durationHours}-hour clock →</>
-            )}
+            Reveal Question →
           </button>
           <p className="text-[11px] text-muted-foreground">
             Timer is server-side and cannot be paused or reset.
           </p>
         </div>
       </div>
+
+      {/* Terms Dialog Popup */}
+      {showTerms && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-medium text-foreground">Terms and Conditions</h3>
+            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+              Before revealing the question and starting your countdown timer, please read and agree to our terms.
+            </p>
+            
+            <div className="mt-4 rounded-lg bg-amber-500/10 p-4 border border-amber-500/30">
+              <p className="text-[12.5px] leading-relaxed text-amber-700 dark:text-amber-400 font-medium">
+                ⚠️ Warning: As soon as you accept, the timer will begin, and there is no pausing or resetting the timer.
+              </p>
+            </div>
+            
+            <div className="mt-6 flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-border bg-background text-primary focus:ring-ring"
+              />
+              <label htmlFor="terms" className="text-[13px] leading-relaxed text-foreground select-none cursor-pointer">
+                I understand and agree that this is a timed assignment. The timer will start immediately and cannot be paused.
+              </label>
+            </div>
+            
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowTerms(false)}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!accepted || starting}
+                onClick={() => {
+                  setShowTerms(false);
+                  onStart();
+                }}
+                className="cta-glow rounded-lg px-5 py-2 text-sm font-medium text-foreground disabled:opacity-50"
+              >
+                {starting ? "Starting..." : "Accept & Start Timer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -231,6 +302,14 @@ function TimedPage({ view }: { view: CandidateView }) {
   const remaining = targetMs - (now + serverOffset);
   const isGrace = view.status === "grace";
   const isSubmitted = view.status === "submitted";
+
+  // GitHub details are blurred unless view.unblurred is true, or status is grace/submitted
+  const isUnblurred = view.unblurred || isGrace || isSubmitted;
+
+  const branchName = view.email && view.candidateId 
+    ? getCandidateBranch(view.email, view.candidateId) 
+    : "candidate/your-branch";
+  const repoName = view.githubRepo?.replace(/^https?:\/\//, "") || "github.com/Chris-healthflex/ai-intern";
 
   return (
     <main className="min-h-screen bg-background">
@@ -282,14 +361,20 @@ function TimedPage({ view }: { view: CandidateView }) {
 
         <div className="mt-4 flex flex-wrap items-center gap-3 text-[13px]">
           <span className="text-muted-foreground">Submit to:</span>
-          <a
-            href={view.githubRepo}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-foreground transition-colors hover:bg-secondary"
-          >
-            {view.githubRepo?.replace(/^https?:\/\//, "")}
-          </a>
+          {isUnblurred ? (
+            <a
+              href={view.githubRepo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-foreground transition-colors hover:bg-secondary animate-in fade-in"
+            >
+              {repoName}
+            </a>
+          ) : (
+            <span className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-muted-foreground select-none filter blur-[3.5px]">
+              {repoName}
+            </span>
+          )}
         </div>
 
         {/* Unique Branch and Git Instructions */}
@@ -301,17 +386,35 @@ function TimedPage({ view }: { view: CandidateView }) {
             <p className="mt-2 text-[13.5px] leading-relaxed text-foreground">
               Push your code to your unique candidate branch. Pushes to other branches cannot be evaluated:
             </p>
-            <div className="mt-3 rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto">
-              <p><span className="text-muted-foreground"># Your unique branch:</span> <strong className="text-sky-700 dark:text-sky-400 font-semibold">{getCandidateBranch(view.email, view.candidateId)}</strong></p>
-              <p><span className="text-muted-foreground"># How to push to your branch:</span></p>
-              <p className="text-muted-foreground">git checkout -b {getCandidateBranch(view.email, view.candidateId)}</p>
-              <p className="text-muted-foreground">git add .</p>
-              <p className="text-muted-foreground">git commit -m "feat: complete assignment"</p>
-              <p className="text-muted-foreground">git push -u origin {getCandidateBranch(view.email, view.candidateId)}</p>
-            </div>
-            <p className="mt-3 text-[12px] text-muted-foreground">
-              Once pushed, the system will automatically sync. You can close this tab safely once your status shows "Submitted".
-            </p>
+            {isUnblurred ? (
+              <div className="mt-3 rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto animate-in fade-in">
+                <p><span className="text-muted-foreground"># Your unique branch:</span> <strong className="text-sky-700 dark:text-sky-400 font-semibold">{branchName}</strong></p>
+                <p><span className="text-muted-foreground"># How to push to your branch:</span></p>
+                <p className="text-muted-foreground">git checkout -b {branchName}</p>
+                <p className="text-muted-foreground">git add .</p>
+                <p className="text-muted-foreground">git commit -m "feat: complete assignment"</p>
+                <p className="text-muted-foreground">git push -u origin {branchName}</p>
+              </div>
+            ) : (
+              <div className="mt-3 select-none filter blur-[4.5px] rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto">
+                <p># Your unique branch: {branchName}</p>
+                <p># How to push to your branch:</p>
+                <p>git checkout -b {branchName}</p>
+                <p>git add .</p>
+                <p>git commit -m "feat: complete assignment"</p>
+                <p>git push -u origin {branchName}</p>
+              </div>
+            )}
+            
+            {!isUnblurred ? (
+              <p className="mt-3 text-[12.5px] text-amber-700 dark:text-amber-400 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-md">
+                🔒 GitHub details are blurred. They will unlock when your assignment timer is complete (during the 10-minute submission window) or when your admin manually unblurs them.
+              </p>
+            ) : (
+              <p className="mt-3 text-[12px] text-muted-foreground">
+                Once pushed, the system will automatically sync. You can close this tab safely once your status shows "Submitted".
+              </p>
+            )}
           </div>
         )}
 
@@ -333,13 +436,13 @@ function TimedPage({ view }: { view: CandidateView }) {
   );
 }
 
-// ─── Root component — orchestrates the two phases ─────────────────────────────
+// ─── Root component — orchestrates the phases ─────────────────────────────
 
 function CandidatePage() {
   const { token } = Route.useParams();
 
-  // Phase: "peek" | "question" | "timed" | "error"
-  const [phase, setPhase] = useState<"loading" | "question" | "timed" | "error">("loading");
+  // Phase: "loading" | "peek" | "question" | "timed" | "error"
+  const [phase, setPhase] = useState<"loading" | "peek" | "question" | "timed" | "error">("loading");
   const [preview, setPreview] = useState<AssignmentPreview | null>(null);
   const [view, setView] = useState<CandidateView | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -372,7 +475,7 @@ function CandidatePage() {
             })
             .catch(() => toError());
         } else {
-          setPhase("question");
+          setPhase("peek"); // Set to "peek" (beautiful landing page) first!
         }
       })
       .catch(() => toError());
@@ -426,6 +529,10 @@ function CandidatePage() {
         </div>
       </main>
     );
+  }
+
+  if (phase === "peek") {
+    return <ClientOnlyHero email={preview.email} onStart={() => setPhase("question")} />;
   }
 
   if (phase === "question") {
