@@ -14,7 +14,7 @@ interface MailInput {
   body: string;
 }
 
-export async function sendMail(input: MailInput): Promise<{ sent: boolean; reason?: string }> {
+export async function sendMail(input: MailInput): Promise<{ sent: boolean; reason?: string | undefined }> {
   let sent = false;
   let reason: string | undefined;
 
