@@ -10,7 +10,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * Bootstrap: if user_roles is completely empty the first authenticated user
  * is granted admin automatically (one-time only).
  */
-export const resolveAuthDestination = createServerFn({ method: "GET" })
+export const resolveAuthDestination = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

@@ -16,9 +16,17 @@ function AuthCallbackPage() {
   useEffect(() => {
     let done = false;
 
+    const timeout = setTimeout(() => {
+      if (!done) {
+        done = true;
+        setError("Sign-in link expired or already used. Please try signing in again.");
+      }
+    }, 10000); // 10 seconds timeout
+
     async function redirect() {
       if (done) return;
       done = true;
+      clearTimeout(timeout);
       try {
         const result = await resolveAuthDestination();
         if (!result.path) {
@@ -50,7 +58,10 @@ function AuthCallbackPage() {
       if (session) redirect();
     });
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      sub.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   if (error) {
