@@ -149,128 +149,221 @@ function ProblemStatement({ text }: { text: string }) {
   return <div className="space-y-1.5">{items}</div>;
 }
 
-// ─── How It Works 9: Interactive step switcher with sliding background indicator pill ───
+// ─── How It Works 9: Two-column step switcher with sliding indicator ───
+
+const HIW_STEPS = [
+  {
+    id: "overview",
+    num: "01",
+    label: "Overview & Stack",
+    icon: "📋",
+    badge: "~10 s read",
+    title: "Assessment Overview & Requirements",
+    bullets: [
+      "Python + FastAPI backend",
+      "Pydantic for structured output validation",
+      "LangChain or LangGraph for the agent flow",
+      "MongoDB for persistent storage",
+      "Git for version control & submission",
+    ],
+    content: `Clinicians at Stance Health currently dictate or type free-text notes after assessments. These notes are messy, incomplete, use inconsistent terminology, and mix objective numbers with subjective observations.
+
+Your task is to build a production-style backend service that turns raw clinician notes (or simulated voice transcripts) into a strictly structured assessment form — directly saveable into MongoDB and usable by downstream clinical tools.`,
+  },
+  {
+    id: "pipeline",
+    num: "02",
+    label: "Core Pipeline & Schema",
+    icon: "⚙️",
+    badge: "2–4 min",
+    title: "Agent Pipeline & Pydantic Schema",
+    bullets: [
+      "Parse the raw note",
+      "Map into a multi-section Pydantic schema",
+      "Flag missing / ambiguous fields with confidence scores",
+      "Never hallucinate numbers or clinical facts",
+      "Produce a human-readable extraction summary",
+    ],
+    content: `AGENT PIPELINE (LangGraph preferred, LangChain acceptable):
+
+STRUCTURED OUTPUT SCHEMA — covers at least:
+1. Patient identifiers / session metadata
+2. Subjective: chief complaint, pain history (location, VAS, aggravating/relieving factors, onset)
+3. Objective: ROM values, strength grades, gait observations, special tests
+4. Assessment / clinical impression
+5. Plan: exercises, load/sets/reps, follow-up, red flags
+6. Extraction metadata: confidence per section, unresolved ambiguities, source spans`,
+  },
+  {
+    id: "api",
+    num: "03",
+    label: "API Endpoints & DB",
+    icon: "🗄️",
+    badge: "Instant",
+    title: "FastAPI Endpoints & MongoDB",
+    bullets: [
+      "POST /assessments/parse — returns structured object + summary",
+      "POST /assessments — saves result to MongoDB",
+      "GET /assessments/{id} — retrieve by ID",
+      "List endpoint filterable by patient_id",
+      "Proper error handling, status codes, input validation",
+    ],
+    content: `MONGODB COLLECTIONS:
+Design a sensible collection schema for the structured assessments. Support basic querying by patient and by date range.
+
+Proper REST conventions, HTTP status codes, and Pydantic request/response models are expected throughout.`,
+  },
+  {
+    id: "deliverables",
+    num: "04",
+    label: "Intern Deliverables",
+    icon: "📦",
+    badge: "Guarded",
+    title: "What you must submit",
+    bullets: [
+      "Working FastAPI service with all endpoints",
+      "LangGraph / LangChain agent code",
+      "Pydantic models for the full structured form",
+      "MongoDB models & connection code",
+      "6–8 synthetic test notes + evaluation script",
+      "1–2 page design document",
+    ],
+    content: `Design document must cover:
+• Agent graph design decisions
+• How you prevent hallucination of numbers
+• Failure modes observed and how you handled them
+• What you would improve with more time`,
+  },
+];
 
 function InteractiveBrief({ text }: { text: string }) {
-  const [activeTab, setActiveTab] = useState(0);
+  const [active, setActive] = useState(0);
 
-  const steps = [
-    {
-      id: "overview",
-      label: "Overview & Stack",
-      icon: "📋",
-      title: "Assessment Overview & Requirements",
-      content: `Clinicians at Stance Health currently dictate or type free-text notes after assessments. These notes are messy, incomplete, use inconsistent terminology, and mix objective numbers with subjective observations.
+  const isStanceHealth =
+    text.toLowerCase().includes("clinical assessment") ||
+    text.toLowerCase().includes("stance health");
 
-Your task is to build a production-style backend service that turns raw clinician notes (or simulated voice transcripts) into a strictly structured assessment form that can be directly saved into MongoDB and used by downstream clinical tools.
+  if (!isStanceHealth) return <ProblemStatement text={text} />;
 
-STACK REQUIREMENTS:
-- Python + FastAPI
-- Pydantic for structured output
-- LangChain or LangGraph for the agent flow
-- MongoDB for storage
-- Git`
-    },
-    {
-      id: "requirements",
-      label: "Core Pipeline & Schema",
-      icon: "⚙️",
-      title: "Agent Pipeline & Pydantic Schema",
-      content: `AGENT PIPELINE (LangGraph preferred, LangChain acceptable):
-- Parse the note.
-- Map content into a multi-section structured schema.
-- Detect missing or ambiguous fields and flag them with confidence scores.
-- Never invent numbers or clinical facts that are not present in the input.
-- Produce a short human-readable summary of what was extracted + what is still missing.
-
-STRUCTURED OUTPUT SCHEMA (Strict Pydantic Validation):
-You must define and strictly validate a schema that covers at least these sections:
-1. Patient identifiers / session metadata
-2. Subjective: chief complaint, pain history (location, intensity VAS, aggravating/relieving factors, onset)
-3. Objective: ROM values, strength grades or force numbers, gait/movement quality observations, special tests
-4. Assessment / clinical impression
-5. Plan: exercises prescribed, load/sets/reps if mentioned, follow-up recommendations, red flags
-6. Extraction metadata: confidence per section, list of unresolved ambiguities, source spans (optional but valued)`
-    },
-    {
-      id: "api",
-      label: "API Endpoints & DB",
-      icon: "🗄️",
-      title: "FastAPI Endpoints & MongoDB",
-      content: `API ENDPOINTS:
-- POST /assessments/parse ➡️ Accepts raw note + optional patient_id ➡️ Returns the fully validated structured object + summary + flags.
-- POST /assessments ➡️ Saves the structured result to MongoDB.
-- GET /assessments/{id} and a simple list endpoint by patient_id.
-- Proper error handling, status codes, and input validation.
-
-MONGODB COLLECTIONS:
-- Design a sensible collection schema for the structured assessments.
-- Support basic querying (by patient, by date range).`
-    },
-    {
-      id: "deliverables",
-      label: "Intern Deliverables",
-      icon: "📦",
-      title: "What you must submit",
-      content: `DELIVERABLES:
-1. Working FastAPI service with the endpoints above.
-2. LangGraph / LangChain agent code.
-3. Pydantic models for the full structured form.
-4. MongoDB models / connection code.
-5. At least 6–8 synthetic test notes (good, incomplete, contradictory, noisy) + a simple evaluation script or notebook showing schema compliance and extraction quality.
-6. Short design document (1–2 pages) covering:
-   * Agent graph design decisions
-   * How you prevent hallucination of numbers
-   * Failure modes you observed and how you handled them
-   * What you would improve with more time`
-    }
-  ];
-
-  // Fallback to normal parsed text if it doesn't look like Stance Health
-  const isStanceHealth = text.toLowerCase().includes("clinical assessment") || text.toLowerCase().includes("stance health");
-
-  if (!isStanceHealth) {
-    return <ProblemStatement text={text} />;
-  }
+  const step = HIW_STEPS[active]!;
 
   return (
-    <div className="space-y-6">
-      {/* Sliding Indicator Pill Switcher (How It Works 9 layout) */}
-      <div className="relative flex rounded-xl bg-secondary/45 p-1 border border-border/45 overflow-x-auto scrollbar-none select-none">
-        
-        {/* Sliding background pill */}
-        <div 
-          className="absolute top-1 bottom-1 rounded-lg bg-background shadow-sm border border-border/40 transition-all duration-300"
-          style={{
-            left: `${activeTab * 25 + 0.25}%`,
-            width: "24.5%",
-          }}
-        />
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-12 items-start">
 
-        {steps.map((s, idx) => (
-          <button
-            key={s.id}
-            onClick={() => setActiveTab(idx)}
-            className={`relative z-10 flex-1 py-2.5 text-center text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors duration-200 cursor-pointer ${
-              activeTab === idx ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-            }`}
-            style={{ width: "25%", minWidth: "120px" }}
-          >
-            <span>{s.icon}</span>
-            <span className="hidden sm:inline">{s.label}</span>
-          </button>
-        ))}
+      {/* ── Left column ── */}
+      <div className="flex flex-col gap-6">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground leading-snug">
+            Build a clinical AI pipeline<br />
+            <span className="bg-gradient-to-r from-sky-500 to-primary bg-clip-text text-transparent">
+              in four focused steps.
+            </span>
+          </h2>
+          <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground font-light max-w-sm">
+            Stance Health runs the same evaluation sequence for every intern: visible problem breakdown, enforced tech stack, and a single scored submission.
+          </p>
+        </div>
+
+        {/* Numbered step list with sliding indicator */}
+        <ol className="relative flex flex-col gap-1">
+          {HIW_STEPS.map((s, idx) => {
+            const isActive = idx === active;
+            return (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onClick={() => setActive(idx)}
+                  className={`w-full text-left rounded-xl px-4 py-3.5 transition-all duration-200 cursor-pointer group
+                    ${isActive
+                      ? "bg-secondary/70 border border-border/60 shadow-sm"
+                      : "hover:bg-secondary/35 border border-transparent"
+                    }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={`text-[11px] font-bold tabular-nums shrink-0 transition-colors ${isActive ? "text-primary" : "text-muted-foreground/60"}`}>
+                        {s.num}
+                      </span>
+                      <span className={`text-[13.5px] font-semibold truncate transition-colors ${isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`}>
+                        {s.icon} {s.label}
+                      </span>
+                    </div>
+                    <span className={`text-[11px] font-medium shrink-0 transition-colors ${isActive ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
+                      {s.badge}
+                    </span>
+                  </div>
+
+                  {/* Expanded description for active step */}
+                  {isActive && (
+                    <p className="mt-2 ml-[26px] text-[12.5px] leading-relaxed text-muted-foreground animate-in fade-in slide-in-from-top-1 duration-200">
+                      {s.content.split("\n")[0]}
+                    </p>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+
+        <p className="text-[12px] text-muted-foreground/60 pl-1">
+          Timer is server-authoritative — read each section carefully before the clock expires.
+        </p>
       </div>
 
-      {/* Animated Detail Panel */}
-      <div className="panel p-6 sm:p-8 border border-border bg-card/40 backdrop-blur-sm rounded-2xl shadow-md animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-2 border-b border-border/30 pb-3">
-          <span>{steps[activeTab]!.icon}</span>
-          <span>{steps[activeTab]!.title}</span>
-        </h3>
-        
-        <div className="whitespace-pre-wrap leading-relaxed font-light text-[14px]">
-          <ProblemStatement text={steps[activeTab]!.content} />
+      {/* ── Right column: animated detail panel ── */}
+      <div
+        key={active}
+        className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-300"
+      >
+        {/* Panel header */}
+        <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5 bg-secondary/20">
+          <span className="text-[10.5px] font-bold uppercase tracking-widest text-muted-foreground">
+            Problem Statement
+          </span>
+          <span className="text-[11px] font-semibold text-muted-foreground">
+            Step {active + 1} of {HIW_STEPS.length}
+          </span>
+        </div>
+
+        {/* Panel body */}
+        <div className="p-5 sm:p-6 space-y-4">
+          {/* Step title chip */}
+          <div className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-secondary/40 px-3 py-1.5">
+            <span className="text-base">{step.icon}</span>
+            <span className="text-[12px] font-semibold text-foreground">{step.title}</span>
+          </div>
+
+          {/* Key points list */}
+          <ul className="space-y-2.5 mt-1">
+            {step.bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-[13px] leading-snug text-foreground/85">
+                <span className="mt-[4px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60 ring-4 ring-primary/10" />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* Divider */}
+          <div className="border-t border-border/40 pt-4">
+            <ProblemStatement text={step.content} />
+          </div>
+        </div>
+
+        {/* Panel footer — progress dots */}
+        <div className="flex items-center gap-1.5 px-5 py-3 border-t border-border/40 bg-secondary/10">
+          {HIW_STEPS.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setActive(i)}
+              className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
+                i === active ? "w-5 bg-primary" : "w-1.5 bg-border hover:bg-muted-foreground/40"
+              }`}
+            />
+          ))}
+          <span className="ml-auto text-[11px] text-muted-foreground/60 font-medium">
+            {active < HIW_STEPS.length - 1 ? `${HIW_STEPS.length - active - 1} more section${HIW_STEPS.length - active - 1 > 1 ? "s" : ""}` : "All sections read"}
+          </span>
         </div>
       </div>
     </div>
