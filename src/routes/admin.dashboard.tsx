@@ -12,6 +12,90 @@ import {
   checkSubmission,
 } from "@/lib/admin.functions";
 
+interface Template {
+  name: string;
+  title: string;
+  duration_hours: number;
+  github_repo: string;
+  problem_statement: string;
+}
+
+const TEMPLATES: Template[] = [
+  {
+    name: "Voice/Note → Structured Clinical Assessment Form Filler",
+    title: "Voice/Note → Structured Clinical Assessment Form Filler",
+    duration_hours: 10,
+    github_repo: "https://github.com/Stance-Health/structured-assessment-filler",
+    problem_statement: `Assignment: Voice/Note → Structured Clinical Assessment Form Filler
+Duration: ~10 hours
+Stack (must use): Python + FastAPI, Pydantic for structured output, LangChain or LangGraph for the agent flow, MongoDB for storage, Git.
+
+Problem Statement
+Clinicians at Stance Health currently dictate or type free-text notes after assessments. These notes are messy, incomplete, use inconsistent terminology, and mix objective numbers with subjective observations. Your task is to build a production-style backend service that turns raw clinician notes (or simulated voice transcripts) into a strictly structured assessment form that can be directly saved into MongoDB and used by downstream clinical tools.
+
+Core Requirements
+
+Input
+A free-text string (clinician note or voice transcript).
+Optional: patient_id and session metadata.
+
+Agent Pipeline (LangGraph preferred, LangChain acceptable)
+Parse the note.
+Map content into a multi-section structured schema.
+Detect missing or ambiguous fields and flag them with confidence scores.
+Never invent numbers or clinical facts that are not present in the input.
+Produce a short human-readable summary of what was extracted + what is still missing.
+
+Structured Output Schema (must be enforced with Pydantic)
+You must define and strictly validate a schema that covers at least these sections:
+- Patient identifiers / session metadata
+- Subjective: chief complaint, pain history (location, intensity VAS, aggravating/relieving factors, onset)
+- Objective: ROM values, strength grades or force numbers, gait/movement quality observations, special tests
+- Assessment / clinical impression
+- Plan: exercises prescribed, load/sets/reps if mentioned, follow-up recommendations, red flags
+- Extraction metadata: confidence per section, list of unresolved ambiguities, source spans (optional but valued)
+
+API
+- POST /assessments/parse → accepts note + optional patient_id → returns the fully validated structured object + summary + flags.
+- POST /assessments → saves the structured result to MongoDB.
+- GET /assessments/{id} and a simple list endpoint by patient_id.
+- Proper error handling, status codes, and input validation.
+
+MongoDB
+- Design a sensible collection schema for the structured assessments.
+- Support basic querying (by patient, by date range).
+
+Robustness
+- Handle incomplete notes, contradictory statements, unit variations (degrees vs %, kg vs N), and noisy language.
+- Graceful degradation when the LLM fails or returns invalid JSON (retry or clear error).
+- No hallucinated clinical data.
+
+Deliverables (what the intern must submit)
+- Working FastAPI service with the endpoints above.
+- LangGraph / LangChain agent code.
+- Pydantic models for the full structured form.
+- MongoDB models / connection code.
+- At least 6–8 synthetic test notes (good, incomplete, contradictory, noisy) + a simple evaluation script or notebook showing schema compliance and extraction quality.
+- Short design document (1–2 pages) covering:
+  * Agent graph design decisions
+  * How you prevent hallucination of numbers
+  * Failure modes you observed and how you handled them
+  * What you would improve with more time
+
+Constraints & Evaluation Focus
+- Time box is strict (~10 hours). Prioritize correctness and reliability over polish.
+- You may use any LLM API, embeddings, or tools.
+- We will evaluate:
+  * Schema strictness and reliability under noisy input
+  * Quality of agent design and structured output handling
+  * Mongo modeling and API cleanliness
+  * Engineering judgment (error handling, validation, documentation)
+  * Clinical safety awareness (never invent data)
+
+This system mirrors the real internal tooling used for clinical assessments and multi-agent summarization at Stance Health. A strong solution will be something we could actually iterate on for production.`
+  }
+];
+
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
     meta: [{ title: "Admin Console — Stance Health Assignments" }],
@@ -247,6 +331,34 @@ function AdminPage() {
           <p className="mt-1 text-[13px] text-muted-foreground">
             Duration starts the moment the candidate opens their unique link.
           </p>
+
+          {/* Template Selector */}
+          <div className="mt-4 rounded-lg border border-border bg-secondary/15 p-4">
+            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Quick Load from Template
+            </label>
+            <select
+              onChange={(e) => {
+                const idx = Number(e.target.value);
+                if (isNaN(idx)) return;
+                const t = TEMPLATES[idx];
+                if (t) {
+                  setTitle(t.title);
+                  setHours(t.duration_hours);
+                  setRepo(t.github_repo);
+                  setProblem(t.problem_statement);
+                }
+              }}
+              defaultValue=""
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="" disabled>-- Select a pre-defined Stance Health template --</option>
+              {TEMPLATES.map((t, i) => (
+                <option key={i} value={i}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+
           <form onSubmit={handleCreate} className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
               <label className="mb-1 block text-[12px] font-medium text-muted-foreground">Title</label>
