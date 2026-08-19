@@ -647,149 +647,120 @@ function TimedPage({
 
   return (
     <main className="min-h-screen bg-background animate-fade-in">
-      <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md sticky top-0 z-40">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
+      <header className="border-b border-border px-6 py-4 bg-card sticky top-0 z-40">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
           <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
           <div className="flex items-center gap-4">
-            <div className="text-[12px] text-muted-foreground">{view.email}</div>
+            <span className="text-[12px] text-muted-foreground">{view.email}</span>
             <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
           </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-5xl px-6 py-10">
-        {/* Glowing Dashboard Timer HUD */}
-        <div
-          className={`mb-10 rounded-2xl border px-6 py-5 shadow-lg transition-all duration-500 ${
-            isSubmitted
-              ? "border-emerald-500/20 bg-emerald-500/5 shadow-emerald-500/5"
-              : isGrace
-                ? "border-amber-500/40 bg-amber-500/5 shadow-[0_0_20px_-3px_oklch(0.78_0.16_85_/_10%)] animate-pulse"
-                : remaining < 1800000 // Less than 30 mins
-                  ? "border-rose-500/40 bg-rose-500/5 shadow-[0_0_20px_-3px_oklch(0.55_0.2_27_/_15%)]"
-                  : "border-border/80 bg-card/60 shadow-[0_0_20px_-3px_var(--color-ring)]"
-          }`}
-        >
+
+        {/* Timer HUD — white/gray only */}
+        <div className="mb-10 rounded-2xl border border-border bg-card px-6 py-5">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
                 {isSubmitted ? "Status" : isGrace ? "Grace period remaining" : "Time remaining"}
               </p>
-              <p className={`mt-1 font-mono text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl bg-gradient-to-r bg-clip-text text-transparent ${
-                isSubmitted 
-                  ? "from-emerald-500 to-emerald-400" 
-                  : isGrace 
-                    ? "from-amber-500 to-amber-400" 
-                    : remaining < 1800000 
-                      ? "from-rose-500 to-rose-400" 
-                      : "from-sky-500 to-sky-400"
-              }`}>
-                {isSubmitted ? "Submitted" : formatRemaining(remaining)}
+              <p className="mt-1 font-mono text-5xl font-bold tracking-tight tabular-nums text-foreground">
+                {isSubmitted ? "Submitted ✓" : formatRemaining(remaining)}
               </p>
             </div>
-            <div className="text-right text-[13px] text-muted-foreground font-medium">
+            <div className="text-right">
               {isGrace && (
-                <p className="font-semibold text-amber-700 dark:text-amber-400 animate-pulse">
+                <p className="text-[13px] font-semibold text-foreground animate-pulse">
                   Push your final code now
                 </p>
               )}
               {!isSubmitted && targetIso && (
-                <p className="mt-0.5">
+                <p className="text-[13px] text-muted-foreground mt-0.5">
                   Ends {new Date(targetIso).toLocaleString(undefined, { timeZoneName: "short" })}
                 </p>
               )}
             </div>
           </div>
-
-          {/* Glowing Minimal Progress Bar */}
           {!isSubmitted && (
-            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-secondary/50 border border-border/40">
-              <div 
-                className={`h-full rounded-full transition-all duration-1000 ${
-                  isGrace 
-                    ? "bg-amber-500 shadow-[0_0_10px_oklch(0.78_0.16_85)]" 
-                    : remaining < 1800000
-                      ? "bg-rose-500 shadow-[0_0_10px_oklch(0.55_0.2_27)] animate-pulse"
-                      : "bg-sky-500 shadow-[0_0_10px_oklch(0.7_0.15_250)]"
-                }`}
+            <div className="mt-4 h-[3px] w-full rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full bg-foreground transition-all duration-1000"
                 style={{ width: `${percentage}%` }}
               />
             </div>
           )}
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+        {/* Title */}
+        <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "clamp(28px, 3.5vw, 44px)", letterSpacing: "-0.035em", lineHeight: 1.1, color: "inherit" }}>
           {view.title}
         </h1>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-[13px]">
-          <span className="text-muted-foreground font-medium">Submit to:</span>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
+          <span className="text-muted-foreground">Submit to:</span>
           {isUnblurred ? (
-            <a
-              href={view.githubRepo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-foreground transition-colors hover:bg-secondary animate-in fade-in"
-            >
+            <a href={view.githubRepo} target="_blank" rel="noopener noreferrer"
+              className="rounded border border-border bg-secondary px-2.5 py-0.5 font-mono text-[12px] text-foreground hover:bg-secondary/80 transition-colors animate-in fade-in">
               {repoName}
             </a>
           ) : (
-            <span className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-muted-foreground select-none filter blur-[3.5px]">
+            <span className="rounded border border-border bg-secondary px-2.5 py-0.5 font-mono text-[12px] text-muted-foreground select-none blur-[3.5px]">
               {repoName}
             </span>
           )}
         </div>
 
-        {/* How It Works 9: Interactive Problem Statement Switcher */}
-        <section className="panel mt-10 p-6 sm:p-8 border border-border bg-card/40 backdrop-blur-sm shadow-md rounded-2xl">
-          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2.5 mb-6">
+        {/* Problem Statement */}
+        <section className="mt-10 rounded-2xl border border-border bg-card p-6 sm:p-8">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground border-b border-border pb-3 mb-7">
             Problem statement
-          </h2>
+          </p>
           <InteractiveBrief text={view.problemStatement ?? ""} />
         </section>
 
-        {/* Unique Branch and Git Instructions */}
+        {/* Branch & Git */}
         {view.email && view.candidateId && (
-          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-6 sm:px-8 shadow-md rounded-xl">
-            <h3 className="text-[13px] font-bold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
+          <div className="mt-8 rounded-xl border border-border bg-card px-6 py-6 sm:px-8">
+            <h3 className="text-[11px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
               Your Dedicated Candidate Branch
             </h3>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground font-light">
+            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground/80 font-light">
               Push your code to your unique candidate branch. Pushes to other branches cannot be evaluated:
             </p>
             {isUnblurred ? (
-              <div className="mt-3 rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto animate-in fade-in">
-                <p><span className="text-muted-foreground"># Your unique branch:</span> <strong className="text-sky-700 dark:text-sky-400 font-semibold">{branchName}</strong></p>
-                <p><span className="text-muted-foreground"># How to push to your branch:</span></p>
+              <div className="mt-3 rounded-lg border border-border bg-background p-4 font-mono text-[12.5px] text-foreground/80 space-y-1.5 overflow-x-auto animate-in fade-in">
+                <p><span className="text-muted-foreground"># Your unique branch:</span> <strong className="text-foreground">{branchName}</strong></p>
+                <p className="text-muted-foreground"># How to push:</p>
                 <p className="text-muted-foreground">git checkout -b {branchName}</p>
                 <p className="text-muted-foreground">git add .</p>
                 <p className="text-muted-foreground">git commit -m "feat: complete assignment"</p>
                 <p className="text-muted-foreground">git push -u origin {branchName}</p>
               </div>
             ) : (
-              <div className="mt-3 select-none filter blur-[4.5px] rounded-lg border border-border bg-background p-3.5 font-mono text-[12.5px] text-foreground/90 space-y-2 overflow-x-auto">
+              <div className="mt-3 select-none blur-[4.5px] rounded-lg border border-border bg-background p-4 font-mono text-[12.5px] text-foreground/80 space-y-1.5 overflow-x-auto">
                 <p># Your unique branch: {branchName}</p>
-                <p># How to push to your branch:</p>
+                <p># How to push:</p>
                 <p>git checkout -b {branchName}</p>
                 <p>git add .</p>
                 <p>git commit -m "feat: complete assignment"</p>
                 <p>git push -u origin {branchName}</p>
               </div>
             )}
-            
             {!isUnblurred ? (
-              <p className="mt-3 text-[12.5px] text-amber-700 dark:text-amber-400 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-md font-medium">
-                🔒 GitHub details are blurred. They will unlock when your assignment timer is complete (during the 10-minute submission window) or when your admin manually unblurs them.
+              <p className="mt-3 text-[12px] text-muted-foreground border border-border rounded-md p-2.5">
+                🔒 GitHub details are blurred. They unlock when your timer is complete or your admin unblurs them.
               </p>
             ) : (
-              <p className="mt-3 text-[12.5px] text-muted-foreground font-medium">
-                Once pushed, the system will automatically sync. You can close this tab safely once your status shows "Submitted".
+              <p className="mt-3 text-[12px] text-muted-foreground">
+                Once pushed, the system will sync automatically.
               </p>
             )}
           </div>
         )}
 
-        <p className="mt-8 text-center text-[12px] text-muted-foreground">
+        <p className="mt-8 text-center text-[11.5px] text-muted-foreground">
           Timer is controlled server-side. Do not close this page until you have pushed your code.
           {isGrace && " You are in the final 10-minute submission window."}
         </p>
