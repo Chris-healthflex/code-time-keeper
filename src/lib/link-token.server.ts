@@ -16,7 +16,7 @@ function fromB64url(value: string): Uint8Array<ArrayBuffer> {
 }
 
 async function key(): Promise<CryptoKey> {
-  const secret = process.env["CANDIDATE_LINK_SECRET"];
+  const secret = process.env["CANDIDATE_LINK_SECRET"] || process.env["SUPABASE_JWT_SECRET"];
   if (!secret) throw new Error("CANDIDATE_LINK_SECRET is not configured");
   return crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, [
     "sign",
