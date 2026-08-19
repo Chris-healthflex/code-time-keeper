@@ -89,13 +89,13 @@ export function HeroFuturistic() {
         <div className="pointer-events-auto mt-6">
           <Link
             to="/auth"
-            className={`cta-glow inline-flex px-6 py-2.5 text-sm font-medium normal-case ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
+            className={`inline-flex rounded-full border border-white/25 bg-white px-6 py-2.5 text-sm font-medium text-black shadow-sm transition-opacity hover:opacity-90 normal-case ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
             style={{
               opacity: subtitleVisible ? undefined : 0,
               animationDelay: '0.25s',
             }}
           >
-            Open admin console
+            Go to dashboard →
           </Link>
         </div>
       </div>
