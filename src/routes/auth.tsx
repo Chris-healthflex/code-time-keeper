@@ -39,6 +39,7 @@ function AuthPage() {
   const [pwError, setPwError] = useState<string | null>(null);
 
   // Google state
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
 
   async function handleMagicLink(e: React.FormEvent) {
@@ -49,12 +50,11 @@ function AuthPage() {
       email: otpEmail,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
-        shouldCreateUser: false, // only existing invited users can log in
+        shouldCreateUser: false,
       },
     });
     setOtpLoading(false);
     if (error) {
-      // "Email not confirmed" / "User not found" → not invited
       if (error.message.toLowerCase().includes("not found") || error.status === 400) {
         setOtpError("This email hasn't been invited. Contact the admin.");
       } else {
@@ -79,7 +79,20 @@ function AuthPage() {
   }
 
   async function handleGoogle() {
-    setGoogleError("Google sign-in isn't configured yet. Use the email link below instead.");
+    setGoogleLoading(true);
+    setGoogleError(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { prompt: "select_account" },
+      },
+    });
+    if (error) {
+      setGoogleError(error.message);
+      setGoogleLoading(false);
+    }
+    // on success the browser navigates away — no cleanup needed
   }
 
   return (
@@ -101,10 +114,15 @@ function AuthPage() {
         <button
           type="button"
           onClick={handleGoogle}
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background px-4 py-2.5 text-[13px] font-medium text-foreground shadow-sm transition-colors hover:bg-secondary"
+          disabled={googleLoading}
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background px-4 py-2.5 text-[13px] font-medium text-foreground shadow-sm transition-colors hover:bg-secondary disabled:opacity-60"
         >
-          <GoogleIcon />
-          Continue with Google
+          {googleLoading ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+          ) : (
+            <GoogleIcon />
+          )}
+          {googleLoading ? "Redirecting…" : "Continue with Google"}
         </button>
         {googleError && (
           <p className="mt-2 rounded-md bg-amber-500/10 px-3 py-2 text-[12px] text-amber-700 dark:text-amber-400">
