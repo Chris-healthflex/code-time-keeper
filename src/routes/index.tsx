@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import logoWhite from "@/assets/logo-white.png";
-import { HeroFuturistic } from "@/components/ui/hero-futuristic";
+import { lazy, Suspense } from "react";
+
+const HeroFuturistic = lazy(() =>
+  import("@/components/ui/hero-futuristic").then((m) => ({ default: m.HeroFuturistic }))
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -64,7 +68,9 @@ function Landing() {
         </Link>
       </header>
 
-      <HeroFuturistic />
+      <Suspense fallback={<div className="h-svh bg-black" />}>
+        <HeroFuturistic />
+      </Suspense>
 
       <section className="relative z-10 border-t border-border/70 px-6 py-6">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-10 gap-y-4 text-[11px] font-medium tracking-wide text-muted-foreground/70">
