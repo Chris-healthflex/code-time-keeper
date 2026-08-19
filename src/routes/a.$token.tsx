@@ -33,11 +33,44 @@ function formatRemaining(ms: number): string {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-8 border-t border-border/60 pt-6">
-      <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">{title}</h3>
+      <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
       <div className="mt-3">{children}</div>
     </section>
   );
 }
+
+// ─── Shared Theme Toggle Button ───
+
+function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTheme: () => void }) {
+  return (
+    <button
+      onClick={toggleTheme}
+      className="p-2 rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/40 bg-secondary/10"
+      title="Toggle Light/Dark Mode"
+      type="button"
+    >
+      {theme === "dark" ? (
+        <svg width="16" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      ) : (
+        <svg width="16" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
+// ─── Premium, Highly Attractive Problem Statement Canvas ───
 
 function ProblemStatement({ text }: { text: string }) {
   const lines = text.split("\n");
@@ -47,10 +80,10 @@ function ProblemStatement({ text }: { text: string }) {
   const flushList = (key: string) => {
     if (listBuf.length === 0) return;
     items.push(
-      <ul key={`ul-${key}`} className="mt-2 space-y-1.5 pl-4">
+      <ul key={`ul-${key}`} className="mt-3 space-y-2.5 pl-5">
         {listBuf.map((li, i) => (
-          <li key={i} className="flex gap-2 text-[13.5px] leading-relaxed text-foreground/90">
-            <span className="mt-[5px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-muted-foreground/50" />
+          <li key={i} className="flex gap-3 text-[14px] leading-relaxed text-foreground/90 font-light">
+            <span className="mt-[7px] h-2 w-2 flex-shrink-0 rounded-full bg-primary/45 ring-4 ring-primary/10" />
             <span>{li}</span>
           </li>
         ))}
@@ -71,19 +104,40 @@ function ProblemStatement({ text }: { text: string }) {
       return;
     }
     flushList(String(i));
+    
+    // Check if it is a main title
+    if (line.startsWith("Assignment:") || line.startsWith("Problem Statement") || line.startsWith("Core Requirements") || line.startsWith("Deliverables") || line.startsWith("Constraints")) {
+      items.push(
+        <div key={i} className="mt-8 border-b border-border/70 pb-2">
+          <p className="text-[15px] font-bold tracking-tight text-foreground uppercase">
+            {line}
+          </p>
+        </div>,
+      );
+      return;
+    }
+
     // Section heading (ends with colon, or ALL CAPS-ish short line)
     const isHeading =
       (line.endsWith(":") && line.length < 80 && !line.includes(".")) ||
       /^[A-Z][A-Za-z /()]+$/.test(line);
+
     if (isHeading) {
       items.push(
-        <p key={i} className="mt-6 text-[13px] font-semibold text-foreground">
+        <p key={i} className="mt-6 text-[13.5px] font-semibold text-foreground/80 tracking-wide">
           {line}
         </p>,
       );
+    } else if (line.startsWith("POST ") || line.startsWith("GET ") || line.startsWith("git ") || line.startsWith("Duration:") || line.startsWith("Stack ")) {
+      // Code style snippet
+      items.push(
+        <div key={i} className="mt-3 rounded-lg border border-border/80 bg-secondary/35 px-4 py-3 font-mono text-[13px] leading-relaxed text-foreground">
+          {line}
+        </div>,
+      );
     } else {
       items.push(
-        <p key={i} className="mt-2 text-[13.5px] leading-relaxed text-foreground/90">
+        <p key={i} className="mt-3 text-[14px] leading-relaxed text-foreground/90 font-light">
           {line}
         </p>,
       );
@@ -127,26 +181,33 @@ function QuestionPage({
   preview,
   onStart,
   starting,
+  theme,
+  toggleTheme,
 }: {
   preview: AssignmentPreview;
   onStart: () => void;
   starting: boolean;
+  theme: "light" | "dark";
+  toggleTheme: () => void;
 }) {
   const [showTerms, setShowTerms] = useState(false);
   const [accepted, setAccepted] = useState(false);
 
   return (
     <main className="min-h-screen bg-background">
-      <header className="border-b border-border/70 px-6 py-4">
+      <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <img src={logoWhite} alt="Stance Health" className="h-7 w-auto" />
-          <span className="text-[12px] text-muted-foreground">{preview.email}</span>
+          <div className="flex items-center gap-4">
+            <span className="text-[12px] text-muted-foreground">{preview.email}</span>
+            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+          </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-3xl px-6 py-10">
         {/* Callout */}
-        <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/5 px-5 py-4">
+        <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/5 px-5 py-4 shadow-sm animate-pulse">
           <p className="text-[13px] font-medium text-amber-700 dark:text-amber-400">
             ⏱ Your {preview.durationHours}-hour clock starts only after clicking{" "}
             <span className="font-semibold">Reveal Question</span> and accepting terms. Read the instructions first.
@@ -154,15 +215,15 @@ function QuestionPage({
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
           {preview.title}
         </h1>
 
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-[13px]">
-          <span className="rounded-full border border-border bg-secondary/60 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-[13px]">
+          <span className="rounded-full border border-border bg-secondary/60 px-3 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
             {preview.durationHours}h timed
           </span>
-          <span className="text-muted-foreground">Submit to:</span>
+          <span className="text-muted-foreground font-medium">Submit to:</span>
           <span className="rounded-md border border-border bg-secondary/50 px-2.5 py-1 font-mono text-[12px] text-muted-foreground select-none filter blur-[3.5px]">
             github.com/Chris-healthflex/ai-intern
           </span>
@@ -170,7 +231,7 @@ function QuestionPage({
 
         {/* Unique Branch Blurring Instructions */}
         {preview.email && preview.candidateId && (
-          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-5 sm:px-8">
+          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-5 sm:px-8 shadow-sm">
             <h3 className="text-[13px] font-semibold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
               Your Unique Branch
             </h3>
@@ -189,43 +250,43 @@ function QuestionPage({
         )}
 
         {/* Problem statement */}
-        <div className="panel mt-8 px-6 py-7 sm:px-8">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="panel mt-8 px-6 py-8 sm:px-10 border border-border bg-card/40 backdrop-blur-sm shadow-md rounded-2xl">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2.5">
             Assignment brief
           </h2>
-          <div className="mt-4">
+          <div className="mt-5">
             <ProblemStatement text={preview.problemStatement ?? ""} />
           </div>
         </div>
 
         {/* Deliverables reminder */}
         <Section title="Before you start">
-          <ul className="space-y-2">
+          <ul className="space-y-3.5 mt-4">
             {[
               "Read the full brief above carefully — the clock starts when you reveal the question.",
               `You have ${preview.durationHours} hours from that moment. After time is up, you have a 10-minute grace window to push your final commit.`,
               `Push your code to your unique branch. Pushes to main or other branches will not be recognized.`,
               "Do not close this tab during the assignment — it polls the server and keeps your session alive.",
             ].map((t, i) => (
-              <li key={i} className="flex gap-3 text-[13.5px] leading-relaxed text-foreground/90">
-                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border border-border text-[10px] font-medium text-muted-foreground">
+              <li key={i} className="flex gap-3 text-[14px] leading-relaxed text-foreground/90 font-light">
+                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-border bg-secondary/40 text-[10px] font-bold text-muted-foreground">
                   {i + 1}
                 </span>
-                {t}
+                <span>{t}</span>
               </li>
             ))}
           </ul>
         </Section>
 
         {/* CTA */}
-        <div className="mt-10 flex flex-col items-center gap-3">
+        <div className="mt-12 flex flex-col items-center gap-3">
           <button
             onClick={() => setShowTerms(true)}
-            className="flex min-w-[260px] items-center justify-center gap-2 rounded-full bg-white px-8 py-3.5 text-[14px] font-semibold text-black shadow-sm transition-opacity hover:opacity-90"
+            className="cta-glow flex min-w-[280px] items-center justify-center gap-2 rounded-full py-3.5 text-[14px] font-bold tracking-wide transition-opacity hover:opacity-90 cursor-pointer"
           >
             Reveal Question →
           </button>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground font-medium">
             Timer is server-side and cannot be paused or reset.
           </p>
         </div>
@@ -233,15 +294,15 @@ function QuestionPage({
 
       {/* Terms Dialog Popup */}
       {showTerms && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-medium text-foreground">Terms and Conditions</h3>
-            <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+            <h3 className="text-xl font-semibold text-foreground tracking-tight">Terms and Conditions</h3>
+            <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
               Before revealing the question and starting your countdown timer, please read and agree to our terms.
             </p>
             
             <div className="mt-4 rounded-lg bg-amber-500/10 p-4 border border-amber-500/30">
-              <p className="text-[12.5px] leading-relaxed text-amber-700 dark:text-amber-400 font-medium">
+              <p className="text-[12.5px] leading-relaxed text-amber-700 dark:text-amber-400 font-semibold">
                 ⚠️ Warning: As soon as you accept, the timer will begin, and there is no pausing or resetting the timer.
               </p>
             </div>
@@ -252,7 +313,7 @@ function QuestionPage({
                 id="terms"
                 checked={accepted}
                 onChange={(e) => setAccepted(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-border bg-background text-primary focus:ring-ring"
+                className="mt-1 h-5 w-5 rounded border-border bg-background text-primary focus:ring-ring cursor-pointer"
               />
               <label htmlFor="terms" className="text-[13px] leading-relaxed text-foreground select-none cursor-pointer">
                 I understand and agree that this is a timed assignment. The timer will start immediately and cannot be paused.
@@ -263,7 +324,7 @@ function QuestionPage({
               <button
                 type="button"
                 onClick={() => setShowTerms(false)}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors"
+                className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -274,7 +335,7 @@ function QuestionPage({
                   setShowTerms(false);
                   onStart();
                 }}
-                className="cta-glow rounded-lg px-5 py-2 text-sm font-medium text-foreground disabled:opacity-50"
+                className="cta-glow rounded-lg px-5 py-2.5 text-sm font-semibold disabled:opacity-50 cursor-pointer"
               >
                 {starting ? "Starting..." : "Accept & Start Timer"}
               </button>
@@ -288,7 +349,15 @@ function QuestionPage({
 
 // ─── Timed assignment view (after timer starts) ───────────────────────────────
 
-function TimedPage({ view }: { view: CandidateView }) {
+function TimedPage({
+  view,
+  theme,
+  toggleTheme,
+}: {
+  view: CandidateView;
+  theme: "light" | "dark";
+  toggleTheme: () => void;
+}) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -311,38 +380,59 @@ function TimedPage({ view }: { view: CandidateView }) {
     : "candidate/your-branch";
   const repoName = view.githubRepo?.replace(/^https?:\/\//, "") || "github.com/Chris-healthflex/ai-intern";
 
+  // Calculate percentage of timer remaining
+  const totalDurationMs = view.endsAt && view.startedAt 
+    ? new Date(view.endsAt).getTime() - new Date(view.startedAt).getTime() 
+    : 0;
+  const percentage = totalDurationMs > 0 
+    ? Math.max(0, Math.min(100, (remaining / totalDurationMs) * 100)) 
+    : 0;
+
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b border-border/70 px-6 py-4">
+    <main className="min-h-screen bg-background animate-fade-in">
+      <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
-          <div className="text-[12px] text-muted-foreground">{view.email}</div>
+          <div className="flex items-center gap-4">
+            <div className="text-[12px] text-muted-foreground">{view.email}</div>
+            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+          </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-3xl px-6 py-10">
-        {/* Timer bar */}
+        {/* Glowing Dashboard Timer HUD */}
         <div
-          className={`mb-10 rounded-xl border px-6 py-5 ${
+          className={`mb-10 rounded-2xl border px-6 py-5 shadow-lg transition-all duration-500 ${
             isSubmitted
-              ? "border-border bg-secondary/40"
+              ? "border-emerald-500/20 bg-emerald-500/5 shadow-emerald-500/5"
               : isGrace
-                ? "border-amber-500/40 bg-amber-500/5"
-                : "border-border bg-card"
+                ? "border-amber-500/40 bg-amber-500/5 shadow-[0_0_20px_-3px_oklch(0.78_0.16_85_/_10%)] animate-pulse"
+                : remaining < 1800000 // Less than 30 mins
+                  ? "border-rose-500/40 bg-rose-500/5 shadow-[0_0_20px_-3px_oklch(0.55_0.2_27_/_15%)]"
+                  : "border-border/80 bg-card/60 shadow-[0_0_20px_-3px_var(--color-ring)]"
           }`}
         >
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 {isSubmitted ? "Status" : isGrace ? "Grace period remaining" : "Time remaining"}
               </p>
-              <p className="mt-1 font-mono text-3xl font-medium tracking-tight tabular-nums text-foreground sm:text-4xl">
+              <p className={`mt-1 font-mono text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl bg-gradient-to-r bg-clip-text text-transparent ${
+                isSubmitted 
+                  ? "from-emerald-500 to-emerald-400" 
+                  : isGrace 
+                    ? "from-amber-500 to-amber-400" 
+                    : remaining < 1800000 
+                      ? "from-rose-500 to-rose-400" 
+                      : "from-sky-500 to-sky-400"
+              }`}>
                 {isSubmitted ? "Submitted" : formatRemaining(remaining)}
               </p>
             </div>
-            <div className="text-right text-[13px] text-muted-foreground">
+            <div className="text-right text-[13px] text-muted-foreground font-medium">
               {isGrace && (
-                <p className="font-medium text-amber-700 dark:text-amber-400">
+                <p className="font-semibold text-amber-700 dark:text-amber-400 animate-pulse">
                   Push your final code now
                 </p>
               )}
@@ -353,14 +443,30 @@ function TimedPage({ view }: { view: CandidateView }) {
               )}
             </div>
           </div>
+
+          {/* Glowing Minimal Progress Bar */}
+          {!isSubmitted && (
+            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-secondary/50 border border-border/40">
+              <div 
+                className={`h-full rounded-full transition-all duration-1000 ${
+                  isGrace 
+                    ? "bg-amber-500 shadow-[0_0_10px_oklch(0.78_0.16_85)]" 
+                    : remaining < 1800000
+                      ? "bg-rose-500 shadow-[0_0_10px_oklch(0.55_0.2_27)] animate-pulse"
+                      : "bg-sky-500 shadow-[0_0_10px_oklch(0.7_0.15_250)]"
+                }`}
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+          )}
         </div>
 
-        <h1 className="text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
           {view.title}
         </h1>
 
         <div className="mt-4 flex flex-wrap items-center gap-3 text-[13px]">
-          <span className="text-muted-foreground">Submit to:</span>
+          <span className="text-muted-foreground font-medium">Submit to:</span>
           {isUnblurred ? (
             <a
               href={view.githubRepo}
@@ -379,11 +485,11 @@ function TimedPage({ view }: { view: CandidateView }) {
 
         {/* Unique Branch and Git Instructions */}
         {view.email && view.candidateId && (
-          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-5 sm:px-8">
-            <h3 className="text-[13px] font-semibold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
+          <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-6 sm:px-8 shadow-md rounded-xl">
+            <h3 className="text-[13px] font-bold tracking-wider text-sky-700 dark:text-sky-400 uppercase">
               Your Dedicated Candidate Branch
             </h3>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground">
+            <p className="mt-2 text-[13.5px] leading-relaxed text-foreground font-light">
               Push your code to your unique candidate branch. Pushes to other branches cannot be evaluated:
             </p>
             {isUnblurred ? (
@@ -407,19 +513,19 @@ function TimedPage({ view }: { view: CandidateView }) {
             )}
             
             {!isUnblurred ? (
-              <p className="mt-3 text-[12.5px] text-amber-700 dark:text-amber-400 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-md">
+              <p className="mt-3 text-[12.5px] text-amber-700 dark:text-amber-400 bg-amber-500/5 border border-amber-500/10 p-2.5 rounded-md font-medium">
                 🔒 GitHub details are blurred. They will unlock when your assignment timer is complete (during the 10-minute submission window) or when your admin manually unblurs them.
               </p>
             ) : (
-              <p className="mt-3 text-[12px] text-muted-foreground">
+              <p className="mt-3 text-[12.5px] text-muted-foreground font-medium">
                 Once pushed, the system will automatically sync. You can close this tab safely once your status shows "Submitted".
               </p>
             )}
           </div>
         )}
 
-        <section className="panel mt-10 p-6 sm:p-8">
-          <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        <section className="panel mt-10 p-6 sm:p-8 border border-border bg-card/40 backdrop-blur-sm shadow-md rounded-2xl">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2.5">
             Problem statement
           </h2>
           <div className="mt-4">
@@ -447,6 +553,31 @@ function CandidatePage() {
   const [view, setView] = useState<CandidateView | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+
+  // Global theme switcher state
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
+    const initial = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    setTheme(initial);
+    if (initial === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+    localStorage.setItem("theme", next);
+    if (next === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   const toError = (reason?: string) => {
     setErrorMsg(
@@ -536,9 +667,9 @@ function CandidatePage() {
   }
 
   if (phase === "question") {
-    return <QuestionPage preview={preview} onStart={handleStart} starting={starting} />;
+    return <QuestionPage preview={preview} onStart={handleStart} starting={starting} theme={theme} toggleTheme={toggleTheme} />;
   }
 
   if (!view) return null;
-  return <TimedPage view={view} />;
+  return <TimedPage view={view} theme={theme} toggleTheme={toggleTheme} />;
 }

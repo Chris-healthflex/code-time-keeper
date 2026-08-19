@@ -68,8 +68,9 @@ export interface CandidateView {
   unblurred?: boolean;
   status?: "in_progress" | "grace" | "closed" | "submitted";
   serverNow?: string;
-  endsAt?: string;
-  graceEndsAt?: string;
+  startedAt?: string | undefined;
+  endsAt?: string | undefined;
+  graceEndsAt?: string | undefined;
 }
 
 /**
@@ -175,6 +176,7 @@ export const openAssignment = createServerFn({ method: "POST" })
         githubRepo: assignment.github_repo,
         unblurred: Boolean((candidate as any).unblurred),
         serverNow: now.toISOString(),
+        startedAt: startedAt ? startedAt.toISOString() : undefined,
       };
     }
 
@@ -226,6 +228,7 @@ export const openAssignment = createServerFn({ method: "POST" })
       githubRepo: assignment.github_repo,
       unblurred: Boolean((candidate as any).unblurred),
       serverNow: now.toISOString(),
+      startedAt: startedAt ? startedAt.toISOString() : undefined,
       ...(endsAt ? { endsAt: endsAt.toISOString() } : {}),
       ...(graceEndsAt ? { graceEndsAt: graceEndsAt.toISOString() } : {}),
     };
