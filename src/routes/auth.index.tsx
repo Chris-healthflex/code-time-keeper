@@ -21,22 +21,12 @@ function GoogleIcon() {
   );
 }
 
-type Mode = "magic" | "password";
-
 function AuthPage() {
-  const [mode, setMode] = useState<Mode>("magic");
-
   // Magic link state
   const [otpEmail, setOtpEmail] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
-
-  // Password state
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [pwLoading, setPwLoading] = useState(false);
-  const [pwError, setPwError] = useState<string | null>(null);
 
   // Google state
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -65,19 +55,6 @@ function AuthPage() {
     }
   }
 
-  async function handlePassword(e: React.FormEvent) {
-    e.preventDefault();
-    setPwLoading(true);
-    setPwError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setPwLoading(false);
-    if (error) {
-      setPwError(error.message);
-    } else {
-      window.location.href = "/auth/callback";
-    }
-  }
-
   async function handleGoogle() {
     setGoogleLoading(true);
     setGoogleError(null);
@@ -92,7 +69,6 @@ function AuthPage() {
       setGoogleError(error.message);
       setGoogleLoading(false);
     }
-    // on success the browser navigates away — no cleanup needed
   }
 
   return (
@@ -137,120 +113,59 @@ function AuthPage() {
           <div className="h-px flex-1 bg-border" />
         </div>
 
-        {/* Tab switcher */}
-        <div className="mb-4 flex rounded-lg border border-border bg-secondary/40 p-0.5 text-[13px]">
-          <button
-            type="button"
-            onClick={() => setMode("magic")}
-            className={`flex-1 rounded-md py-1.5 font-medium transition-colors ${mode === "magic" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Email link
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("password")}
-            className={`flex-1 rounded-md py-1.5 font-medium transition-colors ${mode === "password" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Password
-          </button>
-        </div>
-
         {/* Magic link panel */}
-        {mode === "magic" && (
-          <div className="panel p-6">
-            {otpSent ? (
-              <div className="text-center">
-                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                    <polyline points="22,6 12,13 2,6" />
-                  </svg>
-                </div>
-                <p className="text-[14px] font-medium text-foreground">Check your inbox</p>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  We sent a sign-in link to <strong>{otpEmail}</strong>
-                </p>
-                <button
-                  type="button"
-                  onClick={() => { setOtpSent(false); setOtpError(null); }}
-                  className="mt-4 text-[12px] text-muted-foreground underline-offset-4 hover:underline"
-                >
-                  Use a different email
-                </button>
+        <div className="panel p-6">
+          {otpSent ? (
+            <div className="text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
               </div>
-            ) : (
-              <form onSubmit={handleMagicLink} className="space-y-4">
-                <div>
-                  <label className="mb-1.5 block text-[12px] font-medium text-muted-foreground">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={otpEmail}
-                    onChange={(e) => setOtpEmail(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring"
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                  />
-                </div>
-                {otpError && (
-                  <p className="rounded-md bg-destructive/10 px-3 py-2 text-[13px] text-destructive">
-                    {otpError}
-                  </p>
-                )}
-                <button
-                  type="submit"
-                  disabled={otpLoading}
-                  className="cta-glow w-full py-2.5 text-sm font-medium disabled:opacity-60"
-                >
-                  {otpLoading ? "Sending…" : "Send sign-in link"}
-                </button>
-              </form>
-            )}
-          </div>
-        )}
-
-        {/* Password panel */}
-        {mode === "password" && (
-          <form onSubmit={handlePassword} className="panel space-y-4 p-6">
-            <div>
-              <label className="mb-1.5 block text-[12px] font-medium text-muted-foreground">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring"
-                placeholder="admin@stance.health"
-                autoComplete="email"
-              />
+              <p className="text-[14px] font-medium text-foreground">Check your inbox</p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
+                We sent a sign-in link to <strong>{otpEmail}</strong>
+              </p>
+              <button
+                type="button"
+                onClick={() => { setOtpSent(false); setOtpError(null); }}
+                className="mt-4 text-[12px] text-muted-foreground underline-offset-4 hover:underline"
+              >
+                Use a different email
+              </button>
             </div>
-            <div>
-              <label className="mb-1.5 block text-[12px] font-medium text-muted-foreground">Password</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring"
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-            </div>
-            {pwError && (
-              <p className="rounded-md bg-destructive/10 px-3 py-2 text-[13px] text-destructive">{pwError}</p>
-            )}
-            <button
-              type="submit"
-              disabled={pwLoading}
-              className="cta-glow w-full py-2.5 text-sm font-medium disabled:opacity-60"
-            >
-              {pwLoading ? "Signing in…" : "Sign in"}
-            </button>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleMagicLink} className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-[12px] font-medium text-muted-foreground">
+                  Email link
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={otpEmail}
+                  onChange={(e) => setOtpEmail(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                />
+              </div>
+              {otpError && (
+                <p className="rounded-md bg-destructive/10 px-3 py-2 text-[13px] text-destructive">
+                  {otpError}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={otpLoading}
+                className="cta-glow w-full py-2.5 text-sm font-medium disabled:opacity-60"
+              >
+                {otpLoading ? "Sending…" : "Send sign-in link"}
+              </button>
+            </form>
+          )}
+        </div>
 
         <p className="mt-6 text-center text-[11px] text-muted-foreground">
           Candidates: use the link sent to your email, or sign in above with the same address.
