@@ -156,83 +156,73 @@ const HIW_STEPS = [
     id: "overview",
     num: "01",
     label: "Overview & Stack",
-    icon: "📋",
     badge: "~10 s read",
-    title: "Assessment Overview & Requirements",
-    bullets: [
-      "Python + FastAPI backend",
-      "Pydantic for structured output validation",
-      "LangChain or LangGraph for the agent flow",
-      "MongoDB for persistent storage",
-      "Git for version control & submission",
+    title: "Assessment Brief",
+    tag: "v1.0",
+    meta: "Python · FastAPI · LangGraph · MongoDB · Git",
+    desc: "Turn messy free-text clinician notes into a strictly structured assessment form, saved directly to MongoDB.",
+    rows: [
+      { hash: "py3.x", label: "Python + FastAPI backend", chip: "lang" },
+      { hash: "pyd2",  label: "Pydantic for structured output", chip: "lib" },
+      { hash: "lg1",   label: "LangChain or LangGraph agent flow", chip: "ai" },
+      { hash: "mdb6",  label: "MongoDB for persistent storage", chip: "db" },
+      { hash: "git",   label: "Git — version control & submission", chip: "vcs" },
     ],
-    content: `Clinicians at Stance Health currently dictate or type free-text notes after assessments. These notes are messy, incomplete, use inconsistent terminology, and mix objective numbers with subjective observations.
-
-Your task is to build a production-style backend service that turns raw clinician notes (or simulated voice transcripts) into a strictly structured assessment form — directly saveable into MongoDB and usable by downstream clinical tools.`,
+    extra: null,
   },
   {
     id: "pipeline",
     num: "02",
     label: "Core Pipeline & Schema",
-    icon: "⚙️",
     badge: "2–4 min",
-    title: "Agent Pipeline & Pydantic Schema",
-    bullets: [
-      "Parse the raw note",
-      "Map into a multi-section Pydantic schema",
-      "Flag missing / ambiguous fields with confidence scores",
-      "Never hallucinate numbers or clinical facts",
-      "Produce a human-readable extraction summary",
+    title: "Agent Pipeline",
+    tag: "schema/v1",
+    meta: "LangGraph pipeline · Strict Pydantic · 6 schema sections",
+    desc: "Build an agent that extracts, validates, and flags clinical data — never inventing numbers or facts.",
+    rows: [
+      { hash: "p1", label: "Parse the raw clinician note", chip: "step" },
+      { hash: "p2", label: "Map content into multi-section Pydantic schema", chip: "step" },
+      { hash: "p3", label: "Flag missing fields with confidence scores", chip: "step" },
+      { hash: "p4", label: "Never hallucinate numbers or clinical facts", chip: "critical" },
+      { hash: "p5", label: "Produce human-readable extraction summary", chip: "step" },
     ],
-    content: `AGENT PIPELINE (LangGraph preferred, LangChain acceptable):
-
-STRUCTURED OUTPUT SCHEMA — covers at least:
-1. Patient identifiers / session metadata
-2. Subjective: chief complaint, pain history (location, VAS, aggravating/relieving factors, onset)
-3. Objective: ROM values, strength grades, gait observations, special tests
-4. Assessment / clinical impression
-5. Plan: exercises, load/sets/reps, follow-up, red flags
-6. Extraction metadata: confidence per section, unresolved ambiguities, source spans`,
+    extra: "6 required schema sections: patient, subjective, objective, assessment, plan, metadata",
   },
   {
     id: "api",
     num: "03",
     label: "API Endpoints & DB",
-    icon: "🗄️",
     badge: "Instant",
-    title: "FastAPI Endpoints & MongoDB",
-    bullets: [
-      "POST /assessments/parse — returns structured object + summary",
-      "POST /assessments — saves result to MongoDB",
-      "GET /assessments/{id} — retrieve by ID",
-      "List endpoint filterable by patient_id",
-      "Proper error handling, status codes, input validation",
+    title: "FastAPI + MongoDB",
+    tag: "api/v1",
+    meta: "POST · GET · Collections · Error handling",
+    desc: "Three REST endpoints with proper status codes and a MongoDB collection designed for clinical querying.",
+    rows: [
+      { hash: "POST", label: "/assessments/parse — structured object + summary", chip: "EP1" },
+      { hash: "POST", label: "/assessments — save result to MongoDB", chip: "EP2" },
+      { hash: "GET",  label: "/assessments/{id} — retrieve by ID", chip: "EP3" },
+      { hash: "GET",  label: "List endpoint filterable by patient_id", chip: "EP4" },
     ],
-    content: `MONGODB COLLECTIONS:
-Design a sensible collection schema for the structured assessments. Support basic querying by patient and by date range.
-
-Proper REST conventions, HTTP status codes, and Pydantic request/response models are expected throughout.`,
+    extra: "MongoDB collection with patient + date-range querying support",
   },
   {
     id: "deliverables",
     num: "04",
     label: "Intern Deliverables",
-    icon: "📦",
     badge: "Guarded",
-    title: "What you must submit",
-    bullets: [
-      "Working FastAPI service with all endpoints",
-      "LangGraph / LangChain agent code",
-      "Pydantic models for the full structured form",
-      "MongoDB models & connection code",
-      "6–8 synthetic test notes + evaluation script",
-      "1–2 page design document",
+    title: "What to Submit",
+    tag: "submit",
+    meta: "Code · Tests · Design doc · 6 items total",
+    desc: "Six deliverables that must be pushed to your candidate branch before the timer expires.",
+    rows: [
+      { hash: "D1", label: "Working FastAPI service with all endpoints", chip: "code" },
+      { hash: "D2", label: "LangGraph / LangChain agent code", chip: "code" },
+      { hash: "D3", label: "Pydantic models for the full structured form", chip: "code" },
+      { hash: "D4", label: "MongoDB models & connection code", chip: "code" },
+      { hash: "D5", label: "6–8 synthetic test notes + evaluation script", chip: "tests" },
+      { hash: "D6", label: "1–2 page design document", chip: "docs" },
     ],
-    content: `Design document must cover:
-• Agent graph design decisions
-• How you prevent hallucination of numbers
-• Failure modes observed and how you handled them
-• What you would improve with more time`,
+    extra: null,
   },
 ];
 
@@ -248,23 +238,18 @@ function InteractiveBrief({ text }: { text: string }) {
   const step = HIW_STEPS[active]!;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 lg:gap-8 items-start">
+    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-10 lg:gap-14 items-start">
 
-      {/* ── Left column: step navigator ── */}
-      <div className="flex flex-col gap-5">
-        <div>
-          <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-sky-500 dark:text-sky-400 mb-2">
-            Four sections
-          </p>
-          <h2 className="text-[22px] font-bold tracking-tight text-foreground leading-tight">
-            Build a clinical AI pipeline, step by step.
-          </h2>
-          <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted-foreground">
-            Read each section before the clock runs out.
-          </p>
-        </div>
+      {/* ── Left: massive title + step list ── */}
+      <div>
+        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "clamp(32px, 4vw, 52px)", lineHeight: 1.05, letterSpacing: "-0.04em", color: "#ffffff" }}>
+          Build a clinical AI pipeline in four supervised steps.
+        </h2>
+        <p style={{ marginTop: 20, fontSize: 15, color: "#777", lineHeight: 1.65, fontWeight: 400 }}>
+          Stance Health runs the same evaluation sequence for every intern: visible problem breakdown, enforced tech stack, and a single scored submission.
+        </p>
 
-        <ol className="flex flex-col gap-0.5 mt-1">
+        <ol style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 2 }}>
           {HIW_STEPS.map((s, idx) => {
             const isActive = idx === active;
             return (
@@ -272,75 +257,98 @@ function InteractiveBrief({ text }: { text: string }) {
                 <button
                   type="button"
                   onClick={() => setActive(idx)}
-                  className={`w-full text-left rounded-lg px-3.5 py-3 transition-all duration-150 cursor-pointer group flex items-center justify-between gap-2
-                    ${isActive
-                      ? "bg-sky-500/10 dark:bg-sky-500/10 border border-sky-500/20 shadow-sm"
-                      : "hover:bg-secondary/40 border border-transparent"
-                    }`}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "14px 16px",
+                    borderRadius: 12,
+                    border: isActive ? "1px solid #2e2e2e" : "1px solid transparent",
+                    background: isActive ? "#1c1c1e" : "transparent",
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className={`text-[10px] font-bold tabular-nums shrink-0 w-5 transition-colors ${isActive ? "text-sky-500 dark:text-sky-400" : "text-muted-foreground/40"}`}>
-                      {s.num}
-                    </span>
-                    <span className={`text-[13px] font-semibold truncate transition-colors ${isActive ? "text-foreground" : "text-muted-foreground group-hover:text-foreground/80"}`}>
-                      {s.icon} {s.label}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, fontVariantNumeric: "tabular-nums", flexShrink: 0, color: isActive ? "#ffffff" : "#3a3a3a", fontFamily: "monospace" }}>
+                        {s.num}
+                      </span>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: isActive ? "#ffffff" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {s.label}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: 12, color: isActive ? "#555" : "#333", flexShrink: 0 }}>
+                      {s.badge}
                     </span>
                   </div>
-                  <span className={`text-[10.5px] font-medium shrink-0 transition-colors ${isActive ? "text-sky-500/70 dark:text-sky-400/70" : "text-muted-foreground/35"}`}>
-                    {s.badge}
-                  </span>
+                  {isActive && (
+                    <p style={{ marginTop: 8, marginLeft: 32, fontSize: 13, color: "#666", lineHeight: 1.6 }}>
+                      {s.desc}
+                    </p>
+                  )}
                 </button>
               </li>
             );
           })}
         </ol>
 
-        {/* Progress dots */}
-        <div className="flex items-center gap-1.5 px-1">
-          {HIW_STEPS.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setActive(i)}
-              className={`h-1 rounded-full transition-all duration-200 cursor-pointer ${
-                i === active ? "w-6 bg-sky-500" : "w-1.5 bg-border/60 hover:bg-muted-foreground/30"
-              }`}
-            />
-          ))}
-          <span className="ml-auto text-[10.5px] text-muted-foreground/50 font-medium">
-            {active + 1} / {HIW_STEPS.length}
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() => setActive((active + 1) % HIW_STEPS.length)}
+          style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#ffffff", fontWeight: 500, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+        >
+          Next section <span style={{ fontSize: 16 }}>→</span>
+        </button>
       </div>
 
-      {/* ── Right column: animated detail panel ── */}
+      {/* ── Right: commit-row panel ── */}
       <div
         key={active}
-        className="rounded-xl border border-border/70 bg-card/60 dark:bg-card/40 backdrop-blur-sm shadow-md overflow-hidden animate-in fade-in slide-in-from-right-2 duration-250"
+        style={{
+          borderRadius: 14,
+          border: "1px solid #222",
+          background: "#111",
+          overflow: "hidden",
+          animation: "fadeSlideIn 0.25s ease",
+        }}
       >
-        {/* Step header bar */}
-        <div className="flex items-center gap-3 border-b border-border/50 px-5 py-3.5 bg-secondary/15">
-          <span className="text-lg leading-none">{step.icon}</span>
-          <span className="text-[13px] font-semibold text-foreground tracking-tight">{step.title}</span>
-          <span className="ml-auto text-[10.5px] font-medium text-muted-foreground/60 shrink-0">
-            Step {active + 1} of {HIW_STEPS.length}
+        <style>{`@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+
+        {/* Panel header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderBottom: "1px solid #1e1e1e" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#444" }}>
+            Problem Brief
           </span>
+          <span style={{ fontSize: 12, color: "#444" }}>Step {active + 1} of {HIW_STEPS.length}</span>
         </div>
 
-        {/* Key bullets + full content */}
-        <div className="p-5 sm:p-6 space-y-5">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-            {step.bullets.map((b, i) => (
-              <li key={i} className="flex items-start gap-2 text-[12.5px] leading-snug text-foreground/80">
-                <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500/70 ring-[3px] ring-sky-500/10" />
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="border-t border-border/40 pt-4">
-            <ProblemStatement text={step.content} />
+        {/* Panel body */}
+        <div style={{ padding: "20px 20px 4px" }}>
+          {/* Title row */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em" }}>{step.title}</span>
+            <span style={{ fontSize: 11, background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#666", padding: "3px 10px", borderRadius: 6, fontFamily: "monospace", flexShrink: 0 }}>
+              {step.tag}
+            </span>
           </div>
+          <p style={{ fontSize: 12, color: "#444", marginBottom: 18 }}>{step.meta}</p>
+
+          {/* Rows */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+            {step.rows.map((row, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: "#1a1a1a", border: "1px solid #222", borderRadius: 10, padding: "11px 16px" }}>
+                <span style={{ fontSize: 11, color: "#444", fontFamily: "monospace", flexShrink: 0, width: 38 }}>{row.hash}</span>
+                <span style={{ fontSize: 13.5, color: "#e0e0e0", flex: 1 }}>{row.label}</span>
+                <span style={{ fontSize: 11, background: "#222", border: "1px solid #2e2e2e", color: "#666", padding: "2px 8px", borderRadius: 5, fontWeight: 500, flexShrink: 0 }}>
+                  {row.chip}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {step.extra && (
+            <p style={{ fontSize: 12, color: "#444", paddingBottom: 16 }}>+ {step.extra}</p>
+          )}
         </div>
       </div>
     </div>
