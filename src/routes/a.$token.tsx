@@ -732,6 +732,14 @@ function TimedPage({
           )}
         </div>
 
+        {/* How It Works 9: Interactive Problem Statement Switcher */}
+        <section className="panel mt-10 p-6 sm:p-8 border border-border bg-card/40 backdrop-blur-sm shadow-md rounded-2xl">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2.5 mb-6">
+            Problem statement
+          </h2>
+          <InteractiveBrief text={view.problemStatement ?? ""} />
+        </section>
+
         {/* Unique Branch and Git Instructions */}
         {view.email && view.candidateId && (
           <div className="panel mt-8 border-l-4 border-l-sky-500 bg-sky-500/5 px-6 py-6 sm:px-8 shadow-md rounded-xl">
@@ -772,14 +780,6 @@ function TimedPage({
             )}
           </div>
         )}
-
-        {/* How It Works 9: Interactive Problem Statement Switcher */}
-        <section className="panel mt-10 p-6 sm:p-8 border border-border bg-card/40 backdrop-blur-sm shadow-md rounded-2xl">
-          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2.5 mb-6">
-            Problem statement
-          </h2>
-          <InteractiveBrief text={view.problemStatement ?? ""} />
-        </section>
 
         <p className="mt-8 text-center text-[12px] text-muted-foreground">
           Timer is controlled server-side. Do not close this page until you have pushed your code.
