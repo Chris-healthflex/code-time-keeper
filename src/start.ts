@@ -18,14 +18,14 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
-// Start installs this automatically when src/start.ts is absent; defining the
-// file opts out, so re-add it explicitly to keep server functions protected
-// from cross-site requests.
-const csrfMiddleware = createCsrfMiddleware({
-  filter: (ctx) => ctx.handlerType === "serverFn",
-});
-
 export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
+  requestMiddleware: [
+    errorMiddleware,
+    // createCsrfMiddleware must be called lazily (inside the factory) so that
+    // it's only invoked after the full module graph has initialised. Calling it
+    // at module level causes "not a function" in Rolldown's SSR bundle on Vercel
+    // due to initialisation-order differences vs Rollup.
+    createCsrfMiddleware({ filter: (ctx) => ctx.handlerType === "serverFn" }),
+  ],
 }));
