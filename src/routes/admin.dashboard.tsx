@@ -528,23 +528,40 @@ function AdminPage() {
             <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-neutral-500 mb-2">Assignments</h4>
             
             {assignments.map((a) => (
-              <button
+              <div
                 key={a.id}
-                onClick={() => setSelectedAssignmentId(a.id)}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] transition-colors cursor-pointer text-left truncate ${
+                className={`group w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-[12.5px] transition-colors ${
                   selectedAssignmentId === a.id
                     ? "bg-neutral-800/90 text-white font-semibold"
                     : "text-neutral-400 hover:bg-neutral-800/35 hover:text-white"
                 }`}
               >
-                <div className="flex items-center gap-2 min-w-0">
+                <button
+                  onClick={() => setSelectedAssignmentId(a.id)}
+                  className="flex items-center gap-2 min-w-0 text-left cursor-pointer flex-1 py-1"
+                >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="flex-shrink-0">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                   </svg>
                   <span className="truncate">{a.title}</span>
-                </div>
-              </button>
+                </button>
+                
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(a.id);
+                  }}
+                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all cursor-pointer flex-shrink-0 ml-1.5"
+                  title="Delete Assignment"
+                  type="button"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+              </div>
             ))}
           </div>
         </div>
