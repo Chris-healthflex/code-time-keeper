@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { openAssignment, type CandidateView } from "@/lib/candidate.functions";
+import logoWhite from "@/assets/logo-white.png";
 
 export const Route = createFileRoute("/a/$token")({
   head: () => ({
@@ -92,8 +93,7 @@ function CandidatePage() {
       <header className="border-b border-border/70 px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <span className="inline-block size-3.5 rounded-[4px] bg-primary" />
-            Stance Health
+            <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
           </div>
           <div className="text-[12px] text-muted-foreground">{view.email}</div>
         </div>

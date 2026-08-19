@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import logoWhite from "@/assets/logo-white.png";
 import {
   getMe,
   listAssignments,
@@ -220,8 +221,7 @@ function AdminPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2 text-sm font-medium">
-              <span className="inline-block size-3.5 rounded-[4px] bg-primary" />
-              Stance Health
+              <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
             </Link>
             <span className="text-[13px] text-muted-foreground">Admin console</span>
           </div>

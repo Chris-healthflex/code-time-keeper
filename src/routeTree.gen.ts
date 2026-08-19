@@ -10,8 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ATokenRouteImport } from './routes/a.$token'
 import { Route as ApiPublicHooksTimerTickRouteImport } from './routes/api/public/hooks/timer-tick'
 
@@ -20,14 +20,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ATokenRoute = ATokenRouteImport.update({
@@ -43,38 +43,45 @@ const ApiPublicHooksTimerTickRoute = ApiPublicHooksTimerTickRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/a/$token': typeof ATokenRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/a/$token': typeof ATokenRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
   '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
   '/a/$token': typeof ATokenRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/a/$token' | '/api/public/hooks/timer-tick'
+  fullPaths:
+    '/' | '/admin' | '/auth' | '/a/$token' | '/api/public/hooks/timer-tick'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/a/$token' | '/api/public/hooks/timer-tick'
-  id: '__root__' | '/' | '/auth' | '/admin' | '/a/$token' | '/api/public/hooks/timer-tick'
+  to: '/' | '/admin' | '/auth' | '/a/$token' | '/api/public/hooks/timer-tick'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/a/$token'
+    | '/api/public/hooks/timer-tick'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
   AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
   ATokenRoute: typeof ATokenRoute
   ApiPublicHooksTimerTickRoute: typeof ApiPublicHooksTimerTickRoute
 }
@@ -88,18 +95,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/a/$token': {
@@ -121,8 +128,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthRoute: AuthRoute,
   AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
   ATokenRoute: ATokenRoute,
   ApiPublicHooksTimerTickRoute: ApiPublicHooksTimerTickRoute,
 }

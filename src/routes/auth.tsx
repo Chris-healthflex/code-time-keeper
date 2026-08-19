@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import logoWhite from "@/assets/logo-white.png";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -49,8 +50,7 @@ function AuthPage() {
       <div className="relative z-10 w-full max-w-sm">
         <div className="mb-10 text-center">
           <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
-            <span className="inline-block size-4 rounded-[5px] bg-primary" />
-            Stance Health
+            <img src={logoWhite} alt="Stance Health" className="h-6 w-auto mx-auto" />
           </Link>
           <h1 className="mt-6 text-2xl font-medium tracking-tight text-foreground">
             {mode === "signin" ? "Sign in" : "Create admin account"}
