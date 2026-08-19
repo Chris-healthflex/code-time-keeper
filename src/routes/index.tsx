@@ -54,7 +54,7 @@ function Landing() {
         {/* Navbar floats over the hero */}
         <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-center gap-8 py-6 text-[13px] text-white/70">
           <span className="flex items-center gap-2 font-medium text-white">
-            <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
+            <img src={logoWhite} alt="Stance Health" className="h-10 w-auto" />
           </span>
           <nav className="hidden items-center gap-7 md:flex">
             <a href="#platform" className="transition-colors hover:text-white">
