@@ -26,7 +26,7 @@ export const resolveAuthDestination = createServerFn({ method: "POST" })
       .eq("role", "admin")
       .maybeSingle();
 
-    if (roleRow) return { destination: "admin" as const, path: "/admin" };
+    if (roleRow) return { destination: "admin" as const, path: "/admin/dashboard" };
 
     // ── 1b. Bootstrap: grant admin to the very first authenticated user ────
     const { count } = await supabaseAdmin
@@ -37,7 +37,7 @@ export const resolveAuthDestination = createServerFn({ method: "POST" })
       await supabaseAdmin
         .from("user_roles")
         .insert({ user_id: userId, role: "admin" });
-      return { destination: "admin" as const, path: "/admin" };
+      return { destination: "admin" as const, path: "/admin/dashboard" };
     }
 
     // ── 2. Check if this email is an invited candidate ─────────────────────

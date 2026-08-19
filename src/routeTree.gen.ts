@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ATokenRouteImport } from './routes/a.$token'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiPublicHooksTimerTickRouteImport } from './routes/api/public/hooks/timer-tick'
 
@@ -36,6 +38,16 @@ const ATokenRoute = ATokenRouteImport.update({
   path: '/a/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -49,27 +61,32 @@ const ApiPublicHooksTimerTickRoute = ApiPublicHooksTimerTickRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/a/$token': typeof ATokenRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
   '/a/$token': typeof ATokenRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/admin': typeof AdminIndexRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/a/$token': typeof ATokenRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/hooks/timer-tick': typeof ApiPublicHooksTimerTickRoute
 }
 export interface FileRouteTypes {
@@ -79,15 +96,18 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/a/$token'
+    | '/admin/dashboard'
     | '/auth/callback'
+    | '/admin/'
     | '/api/public/hooks/timer-tick'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/auth'
     | '/a/$token'
+    | '/admin/dashboard'
     | '/auth/callback'
+    | '/admin'
     | '/api/public/hooks/timer-tick'
   id:
     | '__root__'
@@ -95,13 +115,15 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/a/$token'
+    | '/admin/dashboard'
     | '/auth/callback'
+    | '/admin/'
     | '/api/public/hooks/timer-tick'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   ATokenRoute: typeof ATokenRoute
   ApiPublicHooksTimerTickRoute: typeof ApiPublicHooksTimerTickRoute
@@ -137,6 +159,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ATokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/callback'
@@ -154,6 +190,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface AuthRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
 }
@@ -166,7 +214,7 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   ATokenRoute: ATokenRoute,
   ApiPublicHooksTimerTickRoute: ApiPublicHooksTimerTickRoute,
