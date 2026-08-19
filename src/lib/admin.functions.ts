@@ -169,14 +169,18 @@ export const extendTime = createServerFn({ method: "POST" })
     if (!candidate) throw new Error("Candidate not found");
 
     const base = candidate.ends_at ? new Date(candidate.ends_at) : null;
-    const patch: Record<string, unknown> = { extra_minutes: candidate.extra_minutes + data.minutes };
-    if (base) {
-      patch["ends_at"] = new Date(base.getTime() + data.minutes * 60_000).toISOString();
-      patch["grace_ends_at"] = null;
-      patch["timeup_email_sent_at"] = null;
-      patch["closed_email_sent_at"] = null;
-      patch["status"] = "in_progress";
-    }
+    const patch = {
+      extra_minutes: candidate.extra_minutes + data.minutes,
+      ...(base
+        ? {
+            ends_at: new Date(base.getTime() + data.minutes * 60_000).toISOString(),
+            grace_ends_at: null,
+            timeup_email_sent_at: null,
+            closed_email_sent_at: null,
+            status: "in_progress",
+          }
+        : {}),
+    };
     await supabaseAdmin.from("candidates").update(patch).eq("id", data.candidateId);
     await supabaseAdmin.from("audit_logs").insert({
       candidate_id: data.candidateId,
