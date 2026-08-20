@@ -13,6 +13,7 @@ import {
   checkSubmission,
   toggleUnblurCandidate,
   deleteCandidate,
+  selectCandidate,
   listAuditLogs,
 } from "@/lib/admin.functions";
 
@@ -126,6 +127,7 @@ type CandidateRow = {
   submitted_at: string | null;
   revoked: boolean;
   unblurred?: boolean;
+  selected_at?: string | null;
   invite_sent_at: string | null;
   assignments?: { title: string; github_repo: string; duration_hours: number } | null;
 };
@@ -175,60 +177,142 @@ function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTh
   );
 }
 
-// ─── Beautiful Calendar Component for Right Panel (August 2026) ───
+// ─── Calendar Component — real candidate data ───
 
-function CalendarWidget() {
-  const daysInAugust = 31;
-  const startDayOffset = 6; // Aug 1, 2026 is a Saturday (offset 6)
-  
+function CalendarWidget({ candidates }: { candidates: CandidateRow[] }) {
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth()); // 0-indexed
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+
+  const monthLabel = new Date(year, month, 1).toLocaleString("default", { month: "long", year: "numeric" });
+  const firstDayOffset = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Build a map: day → candidate activity for this month/year
+  const activityByDay = useMemo(() => {
+    const map: Record<number, { started: CandidateRow[]; submitted: CandidateRow[]; active: CandidateRow[] }> = {};
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayStart = new Date(year, month, d, 0, 0, 0).getTime();
+      const dayEnd = new Date(year, month, d, 23, 59, 59).getTime();
+      const started = candidates.filter((c) => {
+        if (!c.started_at) return false;
+        const t = new Date(c.started_at).getTime();
+        return t >= dayStart && t <= dayEnd;
+      });
+      const submitted = candidates.filter((c) => {
+        if (!c.submitted_at) return false;
+        const t = new Date(c.submitted_at).getTime();
+        return t >= dayStart && t <= dayEnd;
+      });
+      // "active" = timer running on this day (started before dayEnd, ends after dayStart)
+      const active = candidates.filter((c) => {
+        if (!c.started_at || !c.ends_at) return false;
+        return new Date(c.started_at).getTime() <= dayEnd && new Date(c.ends_at).getTime() >= dayStart;
+      });
+      if (started.length || submitted.length || active.length) {
+        map[d] = { started, submitted, active };
+      }
+    }
+    return map;
+  }, [candidates, year, month, daysInMonth]);
+
   const days: (number | null)[] = [];
-  for (let i = 0; i < startDayOffset; i++) days.push(null);
-  for (let i = 1; i <= daysInAugust; i++) days.push(i);
+  for (let i = 0; i < firstDayOffset; i++) days.push(null);
+  for (let i = 1; i <= daysInMonth; i++) days.push(i);
 
-  // We will highlight "19" (Wednesday, Aug 19, 2026) exactly matching the user date!
-  const todayDate = 19;
-  
-  // Custom mock active candidate deadlines on some days (dots underneath)
-  const candidateDeadlineDays = [12, 13, 14, 17, 19, 21, 24];
+  const isToday = (d: number) =>
+    d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+
+  const prev = () => { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); setSelectedDay(null); };
+  const next = () => { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); setSelectedDay(null); };
+
+  const selected = selectedDay !== null ? activityByDay[selectedDay] : null;
 
   return (
-    <div className="bg-card rounded-xl p-4 border border-border/80">
-      <div className="flex items-center justify-between mb-3.5">
-        <h4 className="text-[13px] font-bold text-white">August 2026</h4>
-        <div className="flex gap-1.5">
-          <button className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-xs">◀</button>
-          <button className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-xs">▶</button>
+    <div className="space-y-3">
+      <div className="bg-card rounded-xl p-4 border border-border/80">
+        <div className="flex items-center justify-between mb-3.5">
+          <h4 className="text-[13px] font-bold text-foreground">{monthLabel}</h4>
+          <div className="flex gap-1.5">
+            <button onClick={prev} className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-xs">◀</button>
+            <button onClick={next} className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-xs">▶</button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 gap-y-1.5 text-center text-[11px] font-medium text-muted-foreground">
+          {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+            <span key={i} className="h-6 flex items-center justify-center font-semibold text-[10px] tracking-wider">{d}</span>
+          ))}
+          {days.map((day, idx) => {
+            if (day === null) return <span key={idx} className="h-7" />;
+            const activity = activityByDay[day];
+            const isSelected = selectedDay === day;
+            return (
+              <div key={idx} className="relative flex flex-col items-center justify-center h-7">
+                <button
+                  onClick={() => setSelectedDay(isSelected ? null : day)}
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-all ${
+                    isSelected
+                      ? "bg-foreground text-background"
+                      : isToday(day)
+                      ? "ring-1 ring-foreground text-foreground font-bold"
+                      : activity
+                      ? "text-foreground hover:bg-secondary cursor-pointer"
+                      : "text-foreground/40 cursor-default"
+                  }`}
+                >
+                  {day}
+                </button>
+                {activity && !isSelected && (
+                  <span className="absolute bottom-[1px] flex gap-[2px]">
+                    {activity.active.length > 0 && <span className="h-1 w-1 rounded-full bg-sky-500" />}
+                    {activity.submitted.length > 0 && <span className="h-1 w-1 rounded-full bg-emerald-500" />}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-y-2 text-center text-[11px] font-medium text-muted-foreground">
-        {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
-          <span key={idx} className="h-6 flex items-center justify-center font-semibold text-[10px] tracking-wider">{d}</span>
-        ))}
-        {days.map((day, idx) => {
-          if (day === null) return <span key={idx} className="h-7" />;
-          
-          const isToday = day === todayDate;
-          const hasDeadline = candidateDeadlineDays.includes(day);
-
-          return (
-            <div key={idx} className="relative flex flex-col items-center justify-center h-7">
-              <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-all ${
-                  isToday
-                    ? "bg-card text-foreground shadow-sm scale-110 font-bold"
-                    : "text-foreground/80 hover:bg-secondary hover:text-foreground cursor-pointer"
-                }`}
-              >
-                {day}
-              </span>
-              {hasDeadline && !isToday && (
-                <span className="absolute bottom-[2px] h-1 w-1 rounded-full bg-neutral-500" />
-              )}
+      {/* Day detail panel */}
+      {selectedDay !== null && (
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            {new Date(year, month, selectedDay).toLocaleDateString("default", { weekday: "long", month: "short", day: "numeric" })}
+          </p>
+          {!selected ? (
+            <p className="text-[12px] text-muted-foreground">No candidate activity.</p>
+          ) : (
+            <div className="space-y-2">
+              {selected.started.map((c) => (
+                <div key={c.id} className="flex items-center gap-2 text-[12px]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-500 flex-shrink-0" />
+                  <span className="font-medium text-foreground truncate">{c.email}</span>
+                  <span className="text-muted-foreground ml-auto flex-shrink-0">Started</span>
+                </div>
+              ))}
+              {selected.submitted.map((c) => (
+                <div key={c.id} className="flex items-center gap-2 text-[12px]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <span className="font-medium text-foreground truncate">{c.email}</span>
+                  <span className="text-muted-foreground ml-auto flex-shrink-0">Submitted</span>
+                </div>
+              ))}
+              {selected.active
+                .filter((c) => !selected.started.find((s) => s.id === c.id) && !selected.submitted.find((s) => s.id === c.id))
+                .map((c) => (
+                  <div key={c.id} className="flex items-center gap-2 text-[12px]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                    <span className="font-medium text-foreground truncate">{c.email}</span>
+                    <span className="text-muted-foreground ml-auto flex-shrink-0">In progress</span>
+                  </div>
+                ))}
             </div>
-          );
-        })}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -402,6 +486,21 @@ function AdminPage() {
       setSelectedCandidate(null);
     } catch (e) {
       alert("Failed to delete candidate: " + (e as Error).message);
+    }
+  }
+
+  async function handleSelectCandidate(candidateId: string) {
+    const nextSteps = prompt("Optional: add a note about next steps to include in the email (leave blank to use default message)") ?? undefined;
+    setBusy(true);
+    setError(null);
+    try {
+      await selectCandidate({ data: { candidateId, nextSteps: nextSteps || undefined } });
+      setCandidates((prev) => prev.map((c) => c.id === candidateId ? { ...c, selected_at: new Date().toISOString() } : c));
+      setSelectedCandidate((prev) => prev && prev.id === candidateId ? { ...prev, selected_at: new Date().toISOString() } : prev);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to mark as selected");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -602,7 +701,7 @@ function AdminPage() {
         <header className="px-6 py-4.5 border-b border-border/80 flex items-center justify-between bg-background">
           <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
             <span>Hiring</span>
-            <span className="text-neutral-600 text-[11px]">▶</span>
+            <span className="text-muted-foreground text-[11px]">▶</span>
             <span className="text-white font-semibold">Candidate queue</span>
           </div>
 
@@ -791,8 +890,7 @@ function AdminPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
-            {/* Calendar widget showing August 2026 */}
-            <CalendarWidget />
+            <CalendarWidget candidates={candidates} />
 
             {/* UP NEXT Activities */}
             <div className="space-y-4">
@@ -934,6 +1032,17 @@ function AdminPage() {
                 </button>
               )}
 
+              {selectedCandidate.submitted_at && (
+                <button
+                  type="button"
+                  onClick={() => handleSelectCandidate(selectedCandidate.id)}
+                  disabled={!!selectedCandidate.selected_at || busy}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {selectedCandidate.selected_at ? "✓ Selected — email sent" : "Mark as Selected & Notify"}
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => handleDeleteCandidate(selectedCandidate.id)}
@@ -964,7 +1073,7 @@ function AdminPage() {
             </div>
 
             {/* Template Selector Inside Modal */}
-            <div className="mb-6 rounded-xl border border-border bg-[#0c0c0c]/60 p-4">
+            <div className="mb-6 rounded-xl border border-border bg-secondary/60 p-4">
               <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Quick Load from Template
               </label>

@@ -323,6 +323,46 @@ export const deleteCandidate = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const selectCandidate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ candidateId: z.string().uuid(), nextSteps: z.string().max(2000).optional() }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: candidate } = await supabaseAdmin
+      .from("candidates")
+      .select("email, assignment_id")
+      .eq("id", data.candidateId)
+      .single();
+    if (!candidate) throw new Error("Candidate not found");
+
+    await supabaseAdmin
+      .from("candidates")
+      .update({ selected_at: new Date().toISOString() } as any)
+      .eq("id", data.candidateId);
+
+    const { selectedMail, sendMail } = await import("./mailer.server");
+    const mail = selectedMail(data.nextSteps ? { nextSteps: data.nextSteps } : {});
+    await sendMail({
+      kind: "selected",
+      to: candidate.email,
+      candidateId: data.candidateId,
+      assignmentId: candidate.assignment_id,
+      ...mail,
+    });
+
+    await supabaseAdmin.from("audit_logs").insert({
+      candidate_id: data.candidateId,
+      assignment_id: candidate.assignment_id,
+      actor: context.userId,
+      event: "candidate_selected",
+    });
+    return { ok: true };
+  });
+
 export const toggleUnblurCandidate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ candidateId: z.string().uuid(), unblurred: z.boolean() }).parse(data))
