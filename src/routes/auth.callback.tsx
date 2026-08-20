@@ -67,7 +67,7 @@ function AuthCallbackPage() {
   if (error) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
-        <img src={logoWhite} alt="Stance Health" className="mx-auto mb-8 h-7 w-auto" />
+        <img src={logoWhite} alt="Stance Health" className="mx-auto mb-8 h-9 w-auto invert dark:invert-0" />
         <div className="max-w-sm rounded-xl border border-destructive/30 bg-destructive/5 px-6 py-5">
           <p className="text-[13px] font-medium text-destructive">Not authorised</p>
           <p className="mt-1 text-[13px] text-muted-foreground">{error}</p>
@@ -84,7 +84,7 @@ function AuthCallbackPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background">
-      <img src={logoWhite} alt="Stance Health" className="mx-auto mb-8 h-7 w-auto" />
+      <img src={logoWhite} alt="Stance Health" className="mx-auto mb-8 h-9 w-auto invert dark:invert-0" />
       <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
         Signing you in…
