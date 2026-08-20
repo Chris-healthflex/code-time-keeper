@@ -8,6 +8,7 @@ import {
 } from "@/lib/candidate.functions";
 import { getCandidateBranch } from "@/lib/utils";
 import logoWhite from "@/assets/logo-white.png";
+import { FlipDiskMatrix } from "@/components/ui/flip-disk-matrix";
 
 export const Route = createFileRoute("/a/$token")({
   head: () => ({
@@ -659,30 +660,43 @@ function TimedPage({
 
       <div className="mx-auto max-w-5xl px-6 py-10">
 
-        {/* Timer HUD — white/gray only */}
+        {/* Timer HUD — flip disk display */}
         <div className="mb-10 rounded-2xl border border-border bg-card px-6 py-5">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-                {isSubmitted ? "Status" : isGrace ? "Grace period remaining" : "Time remaining"}
-              </p>
-              <p className="mt-1 font-mono text-5xl font-bold tracking-tight tabular-nums text-foreground">
-                {isSubmitted ? "Submitted ✓" : formatRemaining(remaining)}
-              </p>
-            </div>
-            <div className="text-right">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              {isSubmitted ? "Status" : isGrace ? "Grace period remaining" : "Time remaining"}
+            </p>
+            <div className="flex items-center gap-4 text-right">
               {isGrace && (
                 <p className="text-[13px] font-semibold text-foreground animate-pulse">
                   Push your final code now
                 </p>
               )}
               {!isSubmitted && targetIso && (
-                <p className="text-[13px] text-muted-foreground mt-0.5">
+                <p className="text-[13px] text-muted-foreground">
                   Ends {new Date(targetIso).toLocaleString(undefined, { timeZoneName: "short" })}
                 </p>
               )}
+              {isSubmitted && (
+                <p className="text-[13px] font-semibold text-foreground">Submitted ✓</p>
+              )}
             </div>
           </div>
+
+          {/* Flip disk matrix timer */}
+          <FlipDiskMatrix display={(() => {
+            if (isSubmitted) return "DONE";
+            if (remaining <= 0) return "00:00";
+            const totalSec = Math.floor(remaining / 1000);
+            const hours = Math.floor(totalSec / 3600);
+            const mins = Math.floor((totalSec % 3600) / 60);
+            const secs = totalSec % 60;
+            if (hours > 0) {
+              return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+            }
+            return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+          })()} />
+
           {!isSubmitted && (
             <div className="mt-4 h-[3px] w-full rounded-full bg-secondary overflow-hidden">
               <div
