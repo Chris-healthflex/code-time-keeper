@@ -242,10 +242,10 @@ function InteractiveBrief({ text }: { text: string }) {
 
       {/* ── Left: massive title + step list ── */}
       <div>
-        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "clamp(32px, 4vw, 52px)", lineHeight: 1.05, letterSpacing: "-0.04em", color: "#ffffff" }}>
+        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "clamp(32px, 4vw, 52px)", lineHeight: 1.05, letterSpacing: "-0.04em", color: "var(--foreground)" }}>
           Build a clinical AI pipeline in four supervised steps.
         </h2>
-        <p style={{ marginTop: 20, fontSize: 15, color: "#777", lineHeight: 1.65, fontWeight: 400 }}>
+        <p style={{ marginTop: 20, fontSize: 15, color: "var(--muted-foreground)", lineHeight: 1.65, fontWeight: 400 }}>
           Stance Health runs the same evaluation sequence for every intern: visible problem breakdown, enforced tech stack, and a single scored submission.
         </p>
 
@@ -262,27 +262,27 @@ function InteractiveBrief({ text }: { text: string }) {
                     textAlign: "left",
                     padding: "14px 16px",
                     borderRadius: 12,
-                    border: isActive ? "1px solid #2e2e2e" : "1px solid transparent",
-                    background: isActive ? "#1c1c1e" : "transparent",
+                    border: isActive ? "1px solid var(--border)" : "1px solid transparent",
+                    background: isActive ? "var(--secondary)" : "transparent",
                     cursor: "pointer",
                     transition: "all 0.15s ease",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, fontVariantNumeric: "tabular-nums", flexShrink: 0, color: isActive ? "#ffffff" : "#3a3a3a", fontFamily: "monospace" }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, fontVariantNumeric: "tabular-nums", flexShrink: 0, color: isActive ? "var(--foreground)" : "var(--muted-foreground)", fontFamily: "monospace", opacity: isActive ? 1 : 0.45 }}>
                         {s.num}
                       </span>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: isActive ? "#ffffff" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: isActive ? "var(--foreground)" : "var(--muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {s.label}
                       </span>
                     </div>
-                    <span style={{ fontSize: 12, color: isActive ? "#555" : "#333", flexShrink: 0 }}>
+                    <span style={{ fontSize: 12, color: "var(--muted-foreground)", flexShrink: 0, opacity: isActive ? 1 : 0.5 }}>
                       {s.badge}
                     </span>
                   </div>
                   {isActive && (
-                    <p style={{ marginTop: 8, marginLeft: 32, fontSize: 13, color: "#666", lineHeight: 1.6 }}>
+                    <p style={{ marginTop: 8, marginLeft: 32, fontSize: 13, color: "var(--muted-foreground)", lineHeight: 1.6 }}>
                       {s.desc}
                     </p>
                   )}
@@ -295,7 +295,7 @@ function InteractiveBrief({ text }: { text: string }) {
         <button
           type="button"
           onClick={() => setActive((active + 1) % HIW_STEPS.length)}
-          style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "#ffffff", fontWeight: 500, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "var(--foreground)", fontWeight: 500, background: "none", border: "none", cursor: "pointer", padding: 0 }}
         >
           Next section <span style={{ fontSize: 16 }}>→</span>
         </button>
@@ -306,8 +306,8 @@ function InteractiveBrief({ text }: { text: string }) {
         key={active}
         style={{
           borderRadius: 14,
-          border: "1px solid #222",
-          background: "#111",
+          border: "1px solid var(--border)",
+          background: "var(--card)",
           overflow: "hidden",
           animation: "fadeSlideIn 0.25s ease",
         }}
@@ -315,31 +315,31 @@ function InteractiveBrief({ text }: { text: string }) {
         <style>{`@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
         {/* Panel header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderBottom: "1px solid #1e1e1e" }}>
-          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#444" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderBottom: "1px solid var(--border)" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>
             Problem Brief
           </span>
-          <span style={{ fontSize: 12, color: "#444" }}>Step {active + 1} of {HIW_STEPS.length}</span>
+          <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Step {active + 1} of {HIW_STEPS.length}</span>
         </div>
 
         {/* Panel body */}
         <div style={{ padding: "20px 20px 4px" }}>
           {/* Title row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontSize: 22, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em" }}>{step.title}</span>
-            <span style={{ fontSize: 11, background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#666", padding: "3px 10px", borderRadius: 6, fontFamily: "monospace", flexShrink: 0 }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: "var(--foreground)", letterSpacing: "-0.02em" }}>{step.title}</span>
+            <span style={{ fontSize: 11, background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--muted-foreground)", padding: "3px 10px", borderRadius: 6, fontFamily: "monospace", flexShrink: 0 }}>
               {step.tag}
             </span>
           </div>
-          <p style={{ fontSize: 12, color: "#444", marginBottom: 18 }}>{step.meta}</p>
+          <p style={{ fontSize: 12, color: "var(--muted-foreground)", marginBottom: 18 }}>{step.meta}</p>
 
           {/* Rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
             {step.rows.map((row, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: "#1a1a1a", border: "1px solid #222", borderRadius: 10, padding: "11px 16px" }}>
-                <span style={{ fontSize: 11, color: "#444", fontFamily: "monospace", flexShrink: 0, width: 38 }}>{row.hash}</span>
-                <span style={{ fontSize: 13.5, color: "#e0e0e0", flex: 1 }}>{row.label}</span>
-                <span style={{ fontSize: 11, background: "#222", border: "1px solid #2e2e2e", color: "#666", padding: "2px 8px", borderRadius: 5, fontWeight: 500, flexShrink: 0 }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--secondary)", border: "1px solid var(--border)", borderRadius: 10, padding: "11px 16px" }}>
+                <span style={{ fontSize: 11, color: "var(--muted-foreground)", fontFamily: "monospace", flexShrink: 0, width: 38 }}>{row.hash}</span>
+                <span style={{ fontSize: 13.5, color: "var(--foreground)", flex: 1, opacity: 0.88 }}>{row.label}</span>
+                <span style={{ fontSize: 11, background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--muted-foreground)", padding: "2px 8px", borderRadius: 5, fontWeight: 500, flexShrink: 0 }}>
                   {row.chip}
                 </span>
               </div>
@@ -347,7 +347,7 @@ function InteractiveBrief({ text }: { text: string }) {
           </div>
 
           {step.extra && (
-            <p style={{ fontSize: 12, color: "#444", paddingBottom: 16 }}>+ {step.extra}</p>
+            <p style={{ fontSize: 12, color: "var(--muted-foreground)", paddingBottom: 16 }}>+ {step.extra}</p>
           )}
         </div>
       </div>
@@ -418,7 +418,7 @@ function QuestionPage({
     <main className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md sticky top-0 z-40">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <img src={logoWhite} alt="Stance Health" className="h-7 w-auto" />
+          <img src={logoWhite} alt="Stance Health" className="h-7 w-auto transition-all" style={{ filter: theme === 'light' ? 'invert(1)' : 'none' }} />
           <div className="flex items-center gap-4">
             <span className="text-[12px] text-muted-foreground">{preview.email}</span>
             <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
@@ -649,7 +649,7 @@ function TimedPage({
     <main className="min-h-screen bg-background animate-fade-in">
       <header className="border-b border-border px-6 py-4 bg-card sticky top-0 z-40">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <img src={logoWhite} alt="Stance Health" className="h-6 w-auto" />
+          <img src={logoWhite} alt="Stance Health" className="h-6 w-auto transition-all" style={{ filter: theme === 'light' ? 'invert(1)' : 'none' }} />
           <div className="flex items-center gap-4">
             <span className="text-[12px] text-muted-foreground">{view.email}</span>
             <ThemeToggle theme={theme} toggleTheme={toggleTheme} />

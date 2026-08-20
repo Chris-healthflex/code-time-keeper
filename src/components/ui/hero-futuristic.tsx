@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import PixelBlast from './PixelBlast';
+import logoWhite from '@/assets/logo-white.png';
 
 const TITLE_WORDS = ['Timed', 'assignments.', 'Zero', 'tampering.'];
 const SUBTITLE =
@@ -40,7 +41,23 @@ export function HeroFuturistic({
 
   return (
     <div className="relative h-svh overflow-hidden bg-black">
-      {/* PixelBlast fills the entire hero */}
+      <style>{`
+        @keyframes heroBgPulse {
+          0% { opacity: 0.45; transform: scale(1); }
+          100% { opacity: 0.9; transform: scale(1.12); }
+        }
+      `}</style>
+
+      {/* Gradient layer — always visible, animates even if WebGL fails */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 70% 60% at 25% 55%, rgba(70,50,220,0.38) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 75% 45%, rgba(40,80,200,0.18) 0%, transparent 65%)',
+          animation: 'heroBgPulse 5s ease-in-out infinite alternate',
+        }}
+      />
+
+      {/* PixelBlast fills the entire hero (transparent — blends over gradient) */}
       <div className="absolute inset-0">
         <PixelBlast
           variant="circle"
@@ -63,6 +80,11 @@ export function HeroFuturistic({
         />
       </div>
 
+      {/* Stance Health logo — top-left */}
+      <div className="absolute top-0 left-0 z-20 p-6">
+        <img src={logoWhite} alt="Stance Health" className="h-7 w-auto" />
+      </div>
+
       {/* Title — upper area */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col items-center pt-28 px-10 sm:pt-32">
         <h1
@@ -70,7 +92,7 @@ export function HeroFuturistic({
           style={{ textShadow: '0 2px 40px rgba(0,0,0,0.8)' }}
         >
           <span className="flex flex-wrap justify-center gap-x-3 leading-tight lg:gap-x-5">
-            {TITLE_WORDS.map((word, i) => (
+            {titleWords.map((word, i) => (
               <span
                 key={i}
                 className={i < visibleWords ? 'hero-fade-in' : ''}
