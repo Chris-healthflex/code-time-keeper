@@ -233,3 +233,62 @@ export const openAssignment = createServerFn({ method: "POST" })
       ...(graceEndsAt ? { graceEndsAt: graceEndsAt.toISOString() } : {}),
     };
   });
+
+/** Candidate requests GitHub push access for themselves by providing their GitHub username. */
+export const requestGithubAccess = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z.object({ token: z.string().min(20).max(4096), githubUsername: z.string().trim().min(1).max(100) }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const { verifyLink } = await import("./link-token.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const claims = await verifyLink(data.token);
+    if (!claims) throw new Error("Invalid or expired link");
+
+    const { data: candidate } = await supabaseAdmin
+      .from("candidates")
+      .select("id, assignment_id, assignments(github_repo)")
+      .eq("id", claims.cid)
+      .single();
+    if (!candidate) throw new Error("Candidate not found");
+
+    const repoUrl = (candidate.assignments as any)?.github_repo as string | undefined;
+    if (!repoUrl) throw new Error("No GitHub repo configured for this assignment");
+
+    const match = repoUrl.match(/github\.com\/([^/]+)\/([^/.]+)/);
+    if (!match) throw new Error(`Cannot parse repo URL: ${repoUrl}`);
+    const [, owner, repo] = match;
+
+    const ghToken = process.env["GITHUB_TOKEN"];
+    if (!ghToken) throw new Error("GitHub integration not configured. Contact your admin.");
+
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/collaborators/${data.githubUsername}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${ghToken}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ permission: "push" }),
+      },
+    );
+
+    if (res.status !== 201 && res.status !== 204) {
+      const body = await res.json().catch(() => ({})) as any;
+      const msg = body?.message ?? `GitHub error ${res.status}`;
+      throw new Error(msg === "Not Found" ? "GitHub username not found" : msg);
+    }
+
+    await supabaseAdmin.from("audit_logs").insert({
+      candidate_id: candidate.id,
+      assignment_id: candidate.assignment_id,
+      actor: candidate.id,
+      event: "github_access_requested",
+      detail: { github_username: data.githubUsername, repo: `${owner}/${repo}` },
+    });
+
+    return { ok: true, alreadyCollaborator: res.status === 204 };
+  });

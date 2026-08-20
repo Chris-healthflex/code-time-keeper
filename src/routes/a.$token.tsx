@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, useMemo, type ComponentType } from "r
 import {
   peekAssignment,
   openAssignment,
+  requestGithubAccess,
   type AssignmentPreview,
   type CandidateView,
 } from "@/lib/candidate.functions";
@@ -625,8 +626,24 @@ function QuestionPage({
 
 // ─── Timed assignment view (after timer starts - with sliding steps!) ───────────────────────────────
 
-function TimedPage({ view }: { view: CandidateView }) {
+function TimedPage({ view, token }: { view: CandidateView; token: string }) {
   const [now, setNow] = useState(() => Date.now());
+  const [ghUsername, setGhUsername] = useState("");
+  const [ghStatus, setGhStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [ghError, setGhError] = useState<string | null>(null);
+
+  async function handleGithubAccess() {
+    if (!ghUsername.trim()) return;
+    setGhStatus("loading");
+    setGhError(null);
+    try {
+      const res = await requestGithubAccess({ data: { token, githubUsername: ghUsername.trim() } });
+      setGhStatus(res.alreadyCollaborator ? "ok" : "ok");
+    } catch (err) {
+      setGhStatus("error");
+      setGhError(err instanceof Error ? err.message : "Failed. Try again.");
+    }
+  }
 
   useEffect(() => {
     const tick = setInterval(() => setNow(Date.now()), 1000);
@@ -755,6 +772,42 @@ function TimedPage({ view }: { view: CandidateView }) {
             <p className="mt-2 text-[13.5px] leading-relaxed text-foreground/80 font-light">
               Push your code to your unique candidate branch. Pushes to other branches cannot be evaluated:
             </p>
+
+            {/* GitHub access request */}
+            <div className="mt-4 rounded-lg border border-border bg-secondary/40 p-4">
+              <p className="text-[12px] font-semibold text-foreground/90 mb-1">Grant yourself push access</p>
+              <p className="text-[11.5px] text-foreground/60 mb-3">
+                Enter your GitHub username below. Without this, your <code className="bg-background px-1 rounded text-[11px]">git push</code> will be rejected.
+              </p>
+              {ghStatus === "ok" ? (
+                <p className="text-[12.5px] text-emerald-400 font-medium">
+                  ✓ Access granted for <strong>@{ghUsername}</strong> — check your GitHub email to accept the invite, then you can push.
+                </p>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={ghUsername}
+                    onChange={(e) => { setGhUsername(e.target.value); setGhStatus("idle"); setGhError(null); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleGithubAccess()}
+                    placeholder="your-github-username"
+                    className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-1 focus:ring-border font-mono"
+                  />
+                  <button
+                    type="button"
+                    disabled={!ghUsername.trim() || ghStatus === "loading"}
+                    onClick={handleGithubAccess}
+                    className="px-4 py-2 bg-foreground text-background text-xs font-bold rounded-lg disabled:opacity-40 hover:bg-foreground/90 transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    {ghStatus === "loading" ? "Requesting…" : "Get Access"}
+                  </button>
+                </div>
+              )}
+              {ghStatus === "error" && (
+                <p className="mt-2 text-[11.5px] text-red-400">{ghError}</p>
+              )}
+            </div>
+
             {isUnblurred ? (
               <div className="mt-3 rounded-lg border border-border bg-background p-4 font-mono text-[12.5px] text-foreground/80 space-y-1.5 overflow-x-auto animate-in fade-in">
                 <p><span className="text-foreground/75"># Your unique branch:</span> <strong className="text-foreground">{branchName}</strong></p>
@@ -929,5 +982,5 @@ function CandidatePage() {
   }
 
   if (!view) return null;
-  return <TimedPage view={view} />;
+  return <TimedPage view={view} token={token} />;
 }
