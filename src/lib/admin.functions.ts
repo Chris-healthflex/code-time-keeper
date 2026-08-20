@@ -304,19 +304,35 @@ export const inviteAdmin = createServerFn({ method: "POST" })
       .upsert({ email, invited_by: context.userId }, { onConflict: "email" });
     if (invErr) throw new Error(invErr.message);
 
-    // Generate an invite link — works for new users who haven't signed up yet
+    // Try invite link first; fall back to magic link if user already exists
     const origin = process.env["APP_ORIGIN"] ?? "https://ai-assignments.stance.health";
-    const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+    let actionLink: string | undefined;
+
+    const { data: inviteData, error: inviteErr } = await supabaseAdmin.auth.admin.generateLink({
       type: "invite",
       email,
       options: { redirectTo: `${origin}/auth/callback` },
     });
-    if (linkErr || !linkData?.properties?.action_link) {
-      throw new Error(`invite_link_failed: ${linkErr?.message ?? "no action_link returned"}`);
+    if (inviteData?.properties?.action_link) {
+      actionLink = inviteData.properties.action_link;
+    } else {
+      // User may already exist — generate a magic link instead
+      const { data: mlData, error: mlErr } = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
+        email,
+        options: { redirectTo: `${origin}/auth/callback` },
+      });
+      if (mlData?.properties?.action_link) {
+        actionLink = mlData.properties.action_link;
+      } else {
+        throw new Error(`link_failed: ${inviteErr?.message ?? mlErr?.message ?? "no action_link returned"}`);
+      }
     }
 
+    if (!actionLink) throw new Error("link_failed: could not generate link");
+
     const { sendMail, adminInviteMail } = await import("./mailer.server");
-    const mail = adminInviteMail({ link: linkData.properties.action_link });
+    const mail = adminInviteMail({ link: actionLink });
     await sendMail({
       kind: "magic_link",
       to: email,
