@@ -58,7 +58,6 @@ export function HeroFuturistic({
                 transform: phase === "hidden" ? "translateY(18px)" : "translateY(0)",
                 transitionDelay: `${i * 80}ms`,
                 color: "var(--foreground)",
-                textShadow: "0 2px 32px rgba(0,0,0,0.5)",
               }}
             >
               {line}
@@ -73,7 +72,6 @@ export function HeroFuturistic({
             opacity: phase === "sub" || phase === "cta" ? 1 : 0,
             transform: phase === "sub" || phase === "cta" ? "translateY(0)" : "translateY(10px)",
             color: "var(--foreground)",
-            textShadow: "0 1px 12px rgba(0,0,0,0.4)",
           }}
         >
           {subtitle}

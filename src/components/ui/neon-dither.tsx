@@ -22,13 +22,13 @@ export function PaperDesignBackground({ className = "" }: { className?: string }
     }
     return {
       back: "#00000000",
-      front: "#1e3580",
+      front: "#9fb3e8",   // light periwinkle — stays clearly lighter than dark text
       bg: "#f4f7ff",
       speed: 0.3,
       size: 2,
       scale: 0.85,
-      opacity: 0.55,
-      glow: "radial-gradient(55% 35% at 50% 40%, rgba(80,120,255,0.08), transparent 70%)",
+      opacity: 0.35,      // much more subtle in light mode
+      glow: "radial-gradient(55% 35% at 50% 40%, rgba(80,120,255,0.05), transparent 70%)",
       glowBlend: "multiply" as const,
     };
   }, [isDark]);
