@@ -631,6 +631,9 @@ function TimedPage({ view, token }: { view: CandidateView; token: string }) {
   const [ghUsername, setGhUsername] = useState("");
   const [ghStatus, setGhStatus] = useState<"idle" | "loading" | "invited" | "already" | "error">("idle");
   const [ghError, setGhError] = useState<string | null>(null);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  const showBanner = !bannerDismissed && ghStatus !== "invited" && ghStatus !== "already";
 
   async function handleGithubAccess() {
     if (!ghUsername.trim()) return;
@@ -824,6 +827,49 @@ function TimedPage({ view, token }: { view: CandidateView; token: string }) {
           {isGrace && " You are in the final 10-minute submission window."}
         </p>
       </div>
+
+      {/* GitHub username reminder banner — bottom left */}
+      {showBanner && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 24,
+            left: 24,
+            zIndex: 50,
+            maxWidth: 340,
+            borderRadius: 14,
+            border: "1px solid var(--border)",
+            background: "var(--card)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
+            padding: "14px 16px",
+            animation: "fadeSlideInBanner 0.3s ease",
+          }}
+        >
+          <style>{`@keyframes fadeSlideInBanner { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+              <div>
+                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--foreground)", letterSpacing: "-0.01em" }}>
+                  Fill in your GitHub username
+                </p>
+                <p style={{ margin: "5px 0 0", fontSize: 11.5, color: "var(--foreground)", lineHeight: 1.5, opacity: 0.7 }}>
+                  Without it your <code style={{ background: "var(--secondary)", padding: "0 4px", borderRadius: 4, fontSize: 11 }}>git push</code> will be rejected.
+                  {ghStatus === "error" && " Already tried? Try again — it should work now."}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setBannerDismissed(true)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "var(--foreground)", opacity: 0.4, fontSize: 16, lineHeight: 1, padding: "0 2px", flexShrink: 0 }}
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
