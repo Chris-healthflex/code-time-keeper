@@ -1096,20 +1096,6 @@ function AdminPage() {
                 )}
               </div>
 
-              {selectedCandidate.started_at && (
-                <button
-                  type="button"
-                  onClick={() => handleToggleUnblur(selectedCandidate.id, !selectedCandidate.unblurred)}
-                  className={`w-full py-2.5 rounded-xl text-sm font-bold border transition-colors cursor-pointer text-center ${
-                    selectedCandidate.unblurred
-                      ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20"
-                      : "bg-secondary border-border text-foreground/80 hover:bg-accent"
-                  }`}
-                >
-                  {selectedCandidate.unblurred ? "🔒 Lock GitHub Details (Blur)" : "🔓 Manually Unblur GitHub details"}
-                </button>
-              )}
-
               {selectedCandidate.started_at && !selectedCandidate.submitted_at && (
                 <button
                   type="button"

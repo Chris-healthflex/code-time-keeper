@@ -629,7 +629,7 @@ function QuestionPage({
 function TimedPage({ view, token }: { view: CandidateView; token: string }) {
   const [now, setNow] = useState(() => Date.now());
   const [ghUsername, setGhUsername] = useState("");
-  const [ghStatus, setGhStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [ghStatus, setGhStatus] = useState<"idle" | "loading" | "invited" | "already" | "error">("idle");
   const [ghError, setGhError] = useState<string | null>(null);
 
   async function handleGithubAccess() {
@@ -638,7 +638,7 @@ function TimedPage({ view, token }: { view: CandidateView; token: string }) {
     setGhError(null);
     try {
       const res = await requestGithubAccess({ data: { token, githubUsername: ghUsername.trim() } });
-      setGhStatus(res.alreadyCollaborator ? "ok" : "ok");
+      setGhStatus(res.alreadyCollaborator ? "already" : "invited");
     } catch (err) {
       setGhStatus("error");
       setGhError(err instanceof Error ? err.message : "Failed. Try again.");
@@ -660,9 +660,6 @@ function TimedPage({ view, token }: { view: CandidateView; token: string }) {
   const remaining = targetMs - (now + serverOffset);
   const isGrace = view.status === "grace";
   const isSubmitted = view.status === "submitted";
-
-  // GitHub details are blurred unless view.unblurred is true, or status is grace/submitted
-  const isUnblurred = view.unblurred || isGrace || isSubmitted;
 
   const branchName = view.email && view.candidateId 
     ? getCandidateBranch(view.email, view.candidateId) 
@@ -743,16 +740,10 @@ function TimedPage({ view, token }: { view: CandidateView; token: string }) {
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
           <span className="text-foreground/75">Submit to:</span>
-          {isUnblurred ? (
-            <a href={view.githubRepo} target="_blank" rel="noopener noreferrer"
-              className="rounded border border-border bg-secondary px-2.5 py-0.5 font-mono text-[12px] text-foreground hover:bg-secondary/80 transition-colors animate-in fade-in">
-              {repoName}
-            </a>
-          ) : (
-            <span className="rounded border border-border bg-secondary px-2.5 py-0.5 font-mono text-[12px] text-foreground/75 select-none blur-[3.5px]">
-              {repoName}
-            </span>
-          )}
+          <a href={view.githubRepo} target="_blank" rel="noopener noreferrer"
+            className="rounded border border-border bg-secondary px-2.5 py-0.5 font-mono text-[12px] text-foreground hover:bg-secondary/80 transition-colors">
+            {repoName}
+          </a>
         </div>
 
         {/* Problem Statement */}
@@ -779,9 +770,13 @@ function TimedPage({ view, token }: { view: CandidateView; token: string }) {
               <p className="text-[11.5px] text-foreground/60 mb-3">
                 Enter your GitHub username below. Without this, your <code className="bg-background px-1 rounded text-[11px]">git push</code> will be rejected.
               </p>
-              {ghStatus === "ok" ? (
+              {ghStatus === "invited" ? (
                 <p className="text-[12.5px] text-emerald-400 font-medium">
-                  ✓ Access granted for <strong>@{ghUsername}</strong> — check your GitHub email to accept the invite, then you can push.
+                  ✓ Invite sent to <strong>@{ghUsername}</strong> — check your GitHub email and accept it, then you can push.
+                </p>
+              ) : ghStatus === "already" ? (
+                <p className="text-[12.5px] text-emerald-400 font-medium">
+                  ✓ <strong>@{ghUsername}</strong> already has access — you can push right away.
                 </p>
               ) : (
                 <div className="flex gap-2">
@@ -808,34 +803,19 @@ function TimedPage({ view, token }: { view: CandidateView; token: string }) {
               )}
             </div>
 
-            {isUnblurred ? (
-              <div className="mt-3 rounded-lg border border-border bg-background p-4 font-mono text-[12.5px] text-foreground/80 space-y-1.5 overflow-x-auto animate-in fade-in">
-                <p><span className="text-foreground/75"># Your unique branch:</span> <strong className="text-foreground">{branchName}</strong></p>
-                <p className="text-foreground/75"># How to push:</p>
-                <p className="text-foreground/75">git checkout -b {branchName}</p>
-                <p className="text-foreground/75">git add .</p>
-                <p className="text-foreground/75">git commit -m "feat: complete assignment"</p>
-                <p className="text-foreground/75">git push -u origin {branchName}</p>
-              </div>
-            ) : (
-              <div className="mt-3 select-none blur-[4.5px] rounded-lg border border-border bg-background p-4 font-mono text-[12.5px] text-foreground/80 space-y-1.5 overflow-x-auto">
-                <p># Your unique branch: {branchName}</p>
-                <p># How to push:</p>
-                <p>git checkout -b {branchName}</p>
-                <p>git add .</p>
-                <p>git commit -m "feat: complete assignment"</p>
-                <p>git push -u origin {branchName}</p>
-              </div>
-            )}
-            {!isUnblurred ? (
-              <p className="mt-3 text-[12px] text-foreground/75 border border-border rounded-md p-2.5">
-                🔒 GitHub details are blurred. They unlock when your timer is complete or your admin unblurs them.
-              </p>
-            ) : (
-              <p className="mt-3 text-[12px] text-foreground/75">
-                Once pushed, the system will sync automatically.
-              </p>
-            )}
+            <div className="mt-3 rounded-lg border border-border bg-background p-4 font-mono text-[12.5px] text-foreground/80 space-y-1.5 overflow-x-auto">
+              <p><span className="text-foreground/75"># 1. Clone the repo (first time only)</span></p>
+              <p className="text-foreground/75">git clone {view.githubRepo} && cd {view.githubRepo?.split("/").pop()?.replace(/\.git$/, "")}</p>
+              <p className="mt-1"><span className="text-foreground/75"># 2. Your unique branch:</span> <strong className="text-foreground">{branchName}</strong></p>
+              <p className="text-foreground/75">git checkout -b {branchName}</p>
+              <p className="mt-1 text-foreground/75"># 3. Push your work</p>
+              <p className="text-foreground/75">git add .</p>
+              <p className="text-foreground/75">git commit -m "feat: complete assignment"</p>
+              <p className="text-foreground/75">git push -u origin {branchName}</p>
+            </div>
+            <p className="mt-3 text-[12px] text-foreground/75">
+              Once pushed, the system will sync automatically.
+            </p>
           </div>
         )}
 
