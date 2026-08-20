@@ -41,8 +41,8 @@ function AuthCallbackPage() {
         } else {
           navigate({ to: result.path as "/" });
         }
-      } catch {
-        setError("Authentication failed. Please try again.");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Authentication failed. Please try again.");
       }
     }
 

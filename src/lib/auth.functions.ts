@@ -50,8 +50,17 @@ export const resolveAuthDestination = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (adminInvite) {
-        await supabaseAdmin.from("user_roles").upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
-        await supabaseAdmin.from("admin_invites").update({ accepted_at: new Date().toISOString() }).eq("id", adminInvite.id);
+        // Insert the admin role — ignore if it somehow already exists
+        const { error: roleErr } = await supabaseAdmin
+          .from("user_roles")
+          .insert({ user_id: userId, role: "admin" });
+        if (roleErr && !roleErr.message.includes("duplicate")) {
+          throw new Error(`grant_admin_failed: ${roleErr.message}`);
+        }
+        await supabaseAdmin
+          .from("admin_invites")
+          .update({ accepted_at: new Date().toISOString() })
+          .eq("id", adminInvite.id);
         return { destination: "admin" as const, path: "/admin/dashboard" };
       }
     }
