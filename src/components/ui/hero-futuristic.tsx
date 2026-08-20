@@ -2,104 +2,104 @@ import { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import logoWhite from '@/assets/logo-white.png';
 
-const TITLE_WORDS = ['Timed', 'assignments.', 'Zero', 'tampering.'];
-const SUBTITLE =
-  'One encrypted link per candidate. The clock starts server-side the moment they open it — and closes itself exactly on time.';
+const DEFAULT_HEADLINE = "Fair tests.\nFaster hires.";
+const DEFAULT_SUBTITLE =
+  "Send candidates a tamper-proof timed assignment in seconds. The clock runs server-side — no extensions, no workarounds, no excuses.";
+const DEFAULT_CTA = "Go to dashboard →";
 
 interface HeroProps {
-  titleWords?: string[];
+  headline?: string;
   subtitle?: string;
   ctaText?: string;
   ctaTo?: string;
   onCtaClick?: () => void;
+  /** @deprecated use headline */
+  titleWords?: string[];
 }
 
 export function HeroFuturistic({
-  titleWords = TITLE_WORDS,
-  subtitle = SUBTITLE,
-  ctaText = "Go to dashboard →",
+  headline = DEFAULT_HEADLINE,
+  subtitle = DEFAULT_SUBTITLE,
+  ctaText = DEFAULT_CTA,
   ctaTo = "/auth",
   onCtaClick,
 }: HeroProps = {}) {
-  const [visibleWords, setVisibleWords] = useState(0);
-  const [subtitleVisible, setSubtitleVisible] = useState(false);
-  const [delays, setDelays] = useState<number[]>([]);
+  const [phase, setPhase] = useState<"hidden" | "headline" | "sub" | "cta">("hidden");
 
   useEffect(() => {
-    setDelays(titleWords.map(() => Math.random() * 0.07));
-  }, [titleWords]);
+    const t1 = setTimeout(() => setPhase("headline"), 120);
+    const t2 = setTimeout(() => setPhase("sub"), 820);
+    const t3 = setTimeout(() => setPhase("cta"), 1260);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
 
-  useEffect(() => {
-    if (visibleWords < titleWords.length) {
-      const t = setTimeout(() => setVisibleWords((v) => v + 1), 480);
-      return () => clearTimeout(t);
-    }
-    const t = setTimeout(() => setSubtitleVisible(true), 600);
-    return () => clearTimeout(t);
-  }, [visibleWords, titleWords]);
+  const lines = headline.split("\n");
 
   return (
     <div className="relative h-svh overflow-hidden">
       {/* Stance Health logo — top-left */}
-      <div className="absolute top-0 left-0 z-20 p-6">
-        <img src={logoWhite} alt="Stance Health" className="h-7 w-auto invert dark:invert-0" />
+      <div
+        className="absolute top-0 left-0 z-20 p-6 transition-opacity duration-700"
+        style={{ opacity: phase === "hidden" ? 0 : 1 }}
+      >
+        <Link to="/">
+          <img src={logoWhite} alt="Stance Health" className="h-7 w-auto invert dark:invert-0" />
+        </Link>
       </div>
 
-      {/* Title — upper area */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col items-center pt-28 px-10 sm:pt-32">
-        <h1
-          className="text-center text-4xl font-extrabold uppercase tracking-tight text-neutral-900 dark:text-white sm:text-6xl xl:text-7xl"
-        >
-          <span className="flex flex-wrap justify-center gap-x-3 leading-tight lg:gap-x-5">
-            {titleWords.map((word, i) => (
-              <span
-                key={i}
-                className={i < visibleWords ? 'hero-fade-in' : ''}
-                style={{
-                  animationDelay: `${i * 0.12 + (delays[i] ?? 0)}s`,
-                  opacity: i < visibleWords ? undefined : 0,
-                  display: 'inline-block',
-                }}
-              >
-                {word}
-              </span>
-            ))}
-          </span>
+      {/* Centered content */}
+      <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
+        {/* Headline */}
+        <h1 className="text-5xl font-extrabold uppercase tracking-tight sm:text-7xl xl:text-8xl">
+          {lines.map((line, i) => (
+            <span
+              key={i}
+              className="block transition-all duration-700"
+              style={{
+                opacity: phase === "hidden" ? 0 : 1,
+                transform: phase === "hidden" ? "translateY(18px)" : "translateY(0)",
+                transitionDelay: `${i * 80}ms`,
+                color: i === 0
+                  ? "var(--foreground)"
+                  : "color-mix(in oklch, var(--foreground) 38%, transparent)",
+              }}
+            >
+              {line}
+            </span>
+          ))}
         </h1>
-      </div>
 
-      {/* Subtitle + CTA — bottom area */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center pb-16 px-10">
+        {/* Subtitle */}
         <p
-          className={`max-w-md text-center text-sm font-medium leading-relaxed normal-case sm:text-base ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
+          className="mt-6 max-w-md text-[15px] leading-relaxed sm:text-base transition-all duration-700"
           style={{
-            opacity: subtitleVisible ? undefined : 0,
-            color: 'var(--foreground)',
+            opacity: phase === "sub" || phase === "cta" ? 1 : 0,
+            transform: phase === "sub" || phase === "cta" ? "translateY(0)" : "translateY(10px)",
+            color: "color-mix(in oklch, var(--foreground) 60%, transparent)",
           }}
         >
           {subtitle}
         </p>
 
-        <div className="pointer-events-auto mt-6">
+        {/* CTA */}
+        <div
+          className="pointer-events-auto mt-8 transition-all duration-500"
+          style={{
+            opacity: phase === "cta" ? 1 : 0,
+            transform: phase === "cta" ? "translateY(0)" : "translateY(8px)",
+          }}
+        >
           {onCtaClick ? (
             <button
               onClick={onCtaClick}
-              className={`inline-flex rounded-full border border-neutral-900/15 dark:border-white/25 bg-neutral-900 dark:bg-white px-6 py-2.5 text-sm font-medium text-white dark:text-black shadow-sm transition-opacity hover:opacity-90 normal-case ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
-              style={{
-                opacity: subtitleVisible ? undefined : 0,
-                animationDelay: '0.25s',
-              }}
+              className="inline-flex rounded-full border border-neutral-900/15 dark:border-white/25 bg-neutral-900 dark:bg-white px-7 py-3 text-sm font-semibold text-white dark:text-black shadow-sm transition-opacity hover:opacity-85 normal-case"
             >
               {ctaText}
             </button>
           ) : (
             <Link
               to={ctaTo as "/"}
-              className={`inline-flex rounded-full border border-neutral-900/15 dark:border-white/25 bg-neutral-900 dark:bg-white px-6 py-2.5 text-sm font-medium text-white dark:text-black shadow-sm transition-opacity hover:opacity-90 normal-case ${subtitleVisible ? 'hero-fade-in-sub' : ''}`}
-              style={{
-                opacity: subtitleVisible ? undefined : 0,
-                animationDelay: '0.25s',
-              }}
+              className="inline-flex rounded-full border border-neutral-900/15 dark:border-white/25 bg-neutral-900 dark:bg-white px-7 py-3 text-sm font-semibold text-white dark:text-black shadow-sm transition-opacity hover:opacity-85 normal-case"
             >
               {ctaText}
             </Link>
