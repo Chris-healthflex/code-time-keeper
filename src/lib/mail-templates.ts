@@ -47,8 +47,8 @@ function shell(opts: {
 
       <!-- Header -->
       <tr>
-        <td class="header" style="background:#0a0a0a;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center">
-          <h1 style="color:#ffffff;font-size:24px;margin:0;letter-spacing:4px;font-weight:800;text-transform:uppercase">STANCE HEALTH</h1>
+        <td class="header" style="background:#0a0a0a;border-radius:12px 12px 0 0;padding:28px 40px;text-align:center">
+          <img src="${LOGO}" alt="Stance Health" width="140" style="display:block;margin:0 auto;height:auto;max-width:140px" />
         </td>
       </tr>
 

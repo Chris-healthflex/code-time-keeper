@@ -40,10 +40,13 @@ async function sendViaGmail(input: MailInput, from: string): Promise<{ sent: boo
   try {
     const accessToken = await getGmailAccessToken();
 
+    // RFC 2047 encode subject so non-ASCII chars (→, etc.) render correctly
+    const encodedSubject = `=?UTF-8?B?${Buffer.from(input.subject).toString("base64")}?=`;
+
     const mime = [
       `From: ${from}`,
       `To: ${input.to}`,
-      `Subject: ${input.subject}`,
+      `Subject: ${encodedSubject}`,
       `MIME-Version: 1.0`,
       `Content-Type: text/html; charset=UTF-8`,
       ``,
