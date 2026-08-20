@@ -505,10 +505,10 @@ function QuestionPage({
                   You are ready! Read and accept the final timing terms below to immediately reveal the assignment brief and start your timer.
                 </p>
 
-                <div className="mt-6 rounded-xl bg-amber-500/10 p-5 border border-amber-500/30">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">🚨 Critical Warning</h4>
-                  <p className="text-[13px] leading-relaxed text-amber-700 dark:text-amber-400 font-medium mt-1">
-                    Once you click "Accept & Start Timer", your {preview.durationHours}-hour timer will begin immediately. The timer is server-authoritative and **cannot be paused or reset** under any circumstances.
+                <div className="mt-6 rounded-xl bg-secondary border border-border p-5">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Important</h4>
+                  <p className="text-[13px] leading-relaxed text-muted-foreground mt-1">
+                    Once you click "Accept & Start Timer", your {preview.durationHours}-hour timer will begin immediately. The timer is server-authoritative and cannot be paused or reset under any circumstances.
                   </p>
                 </div>
 
