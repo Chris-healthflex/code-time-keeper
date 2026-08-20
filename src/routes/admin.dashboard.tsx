@@ -153,7 +153,7 @@ function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTh
   return (
     <button
       onClick={toggleTheme}
-      className="p-1.5 rounded-lg hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border bg-muted"
+      className="p-1.5 rounded-lg hover:bg-secondary/80 text-foreground/75 hover:text-foreground transition-colors cursor-pointer border border-border bg-muted"
       title="Toggle Light/Dark Mode"
       type="button"
     >
@@ -236,12 +236,12 @@ function CalendarWidget({ candidates }: { candidates: CandidateRow[] }) {
         <div className="flex items-center justify-between mb-3.5">
           <h4 className="text-[13px] font-bold text-foreground">{monthLabel}</h4>
           <div className="flex gap-1.5">
-            <button onClick={prev} className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-xs">◀</button>
-            <button onClick={next} className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-xs">▶</button>
+            <button onClick={prev} className="p-1 rounded hover:bg-secondary text-foreground/75 hover:text-foreground transition-colors text-xs">◀</button>
+            <button onClick={next} className="p-1 rounded hover:bg-secondary text-foreground/75 hover:text-foreground transition-colors text-xs">▶</button>
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-y-1.5 text-center text-[11px] font-medium text-muted-foreground">
+        <div className="grid grid-cols-7 gap-y-1.5 text-center text-[11px] font-medium text-foreground/75">
           {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
             <span key={i} className="h-6 flex items-center justify-center font-semibold text-[10px] tracking-wider">{d}</span>
           ))}
@@ -280,25 +280,25 @@ function CalendarWidget({ candidates }: { candidates: CandidateRow[] }) {
       {/* Day detail panel */}
       {selectedDay !== null && (
         <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-foreground/75">
             {new Date(year, month, selectedDay).toLocaleDateString("default", { weekday: "long", month: "short", day: "numeric" })}
           </p>
           {!selected ? (
-            <p className="text-[12px] text-muted-foreground">No candidate activity.</p>
+            <p className="text-[12px] text-foreground/75">No candidate activity.</p>
           ) : (
             <div className="space-y-2">
               {selected.started.map((c) => (
                 <div key={c.id} className="flex items-center gap-2 text-[12px]">
                   <span className="h-1.5 w-1.5 rounded-full bg-sky-500 flex-shrink-0" />
                   <span className="font-medium text-foreground truncate">{c.email}</span>
-                  <span className="text-muted-foreground ml-auto flex-shrink-0">Started</span>
+                  <span className="text-foreground/75 ml-auto flex-shrink-0">Started</span>
                 </div>
               ))}
               {selected.submitted.map((c) => (
                 <div key={c.id} className="flex items-center gap-2 text-[12px]">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                   <span className="font-medium text-foreground truncate">{c.email}</span>
-                  <span className="text-muted-foreground ml-auto flex-shrink-0">Submitted</span>
+                  <span className="text-foreground/75 ml-auto flex-shrink-0">Submitted</span>
                 </div>
               ))}
               {selected.active
@@ -307,7 +307,7 @@ function CalendarWidget({ candidates }: { candidates: CandidateRow[] }) {
                   <div key={c.id} className="flex items-center gap-2 text-[12px]">
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0" />
                     <span className="font-medium text-foreground truncate">{c.email}</span>
-                    <span className="text-muted-foreground ml-auto flex-shrink-0">In progress</span>
+                    <span className="text-foreground/75 ml-auto flex-shrink-0">In progress</span>
                   </div>
                 ))}
             </div>
@@ -585,7 +585,7 @@ function AdminPage() {
   if (!ready) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-foreground/75">Loading…</p>
       </main>
     );
   }
@@ -594,7 +594,7 @@ function AdminPage() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
         <h1 className="text-xl font-medium text-white">Admin access required</h1>
-        <p className="mt-2 max-w-sm text-[14px] text-muted-foreground">
+        <p className="mt-2 max-w-sm text-[14px] text-foreground/75">
           Your account does not have the admin role. Ask an existing admin to invite you.
         </p>
         <button onClick={signOut} className="mt-6 text-sm underline text-foreground/80 hover:text-foreground cursor-pointer">
@@ -618,18 +618,18 @@ function AdminPage() {
             <span className="flex h-7 w-7 items-center justify-center rounded bg-secondary text-white font-bold text-[13px] border border-border/60">S</span>
             <div className="flex flex-col min-w-0">
               <span className="text-[12.5px] font-bold text-white truncate leading-tight">Stance Health</span>
-              <span className="text-[10px] text-muted-foreground tracking-wide font-medium mt-0.5">Hiring Desk</span>
+              <span className="text-[10px] text-foreground/75 tracking-wide font-medium mt-0.5">Hiring Desk</span>
             </div>
           </div>
 
           {/* Section: HIRING */}
           <div className="px-3 py-4 space-y-1">
-            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Hiring</h4>
+            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-foreground/90 mb-2">Hiring</h4>
             
             <button
               onClick={() => { setActiveTab("all"); setSelectedAssignmentId(""); }}
               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] transition-colors cursor-pointer ${
-                selectedAssignmentId === "" ? "bg-secondary/90 text-white font-semibold" : "text-muted-foreground hover:bg-secondary/35 hover:text-foreground"
+                selectedAssignmentId === "" ? "bg-secondary/90 text-white font-semibold" : "text-foreground/75 hover:bg-secondary/35 hover:text-foreground"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -641,12 +641,12 @@ function AdminPage() {
                 </svg>
                 <span>Active Candidates</span>
               </div>
-              <span className="text-[10.5px] font-bold text-muted-foreground">{counts.all}</span>
+              <span className="text-[10.5px] font-bold text-foreground/75">{counts.all}</span>
             </button>
 
             <button
               onClick={() => { setShowCreateModal(true); }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12.5px] text-muted-foreground hover:bg-secondary/35 hover:text-foreground transition-colors cursor-pointer"
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12.5px] text-foreground/75 hover:bg-secondary/35 hover:text-foreground transition-colors cursor-pointer"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
@@ -657,7 +657,7 @@ function AdminPage() {
 
             <button
               onClick={() => { setShowInviteAdmin(true); setAdminInviteStatus("idle"); }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12.5px] text-muted-foreground hover:bg-secondary/35 hover:text-foreground transition-colors cursor-pointer"
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12.5px] text-foreground/75 hover:bg-secondary/35 hover:text-foreground transition-colors cursor-pointer"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -671,7 +671,7 @@ function AdminPage() {
 
           {/* Section: ASSIGNMENT TEMPLATES (replaces DESKS section) */}
           <div className="px-3 py-2 space-y-1">
-            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Assignments</h4>
+            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-foreground/90 mb-2">Assignments</h4>
             
             {assignments.map((a) => (
               <div
@@ -679,7 +679,7 @@ function AdminPage() {
                 className={`group w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-[12.5px] transition-colors ${
                   selectedAssignmentId === a.id
                     ? "bg-secondary/90 text-white font-semibold"
-                    : "text-muted-foreground hover:bg-secondary/35 hover:text-foreground"
+                    : "text-foreground/75 hover:bg-secondary/35 hover:text-foreground"
                 }`}
               >
                 <button
@@ -698,7 +698,7 @@ function AdminPage() {
                     e.stopPropagation();
                     handleDelete(a.id);
                   }}
-                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-accent text-muted-foreground hover:text-red-400 transition-all cursor-pointer flex-shrink-0 ml-1.5"
+                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-accent text-foreground/75 hover:text-red-400 transition-all cursor-pointer flex-shrink-0 ml-1.5"
                   title="Delete Assignment"
                   type="button"
                 >
@@ -719,7 +719,7 @@ function AdminPage() {
               <span className="flex h-7 w-7 items-center justify-center rounded bg-foreground text-background font-bold text-[11px]">CT</span>
               <div className="flex flex-col min-w-0">
                 <span className="text-[11.5px] font-bold text-white truncate leading-tight">Chris Thomas</span>
-                <span className="text-[9.5px] text-muted-foreground truncate leading-none mt-0.5">Hiring Admin</span>
+                <span className="text-[9.5px] text-foreground/75 truncate leading-none mt-0.5">Hiring Admin</span>
               </div>
             </div>
             <ThemeToggle theme="dark" toggleTheme={toggleTheme} />
@@ -734,9 +734,9 @@ function AdminPage() {
         
         {/* Header Breadcrumbs Bar */}
         <header className="px-6 py-4.5 border-b border-border/80 flex items-center justify-between bg-background">
-          <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-foreground/75">
             <span>Hiring</span>
-            <span className="text-muted-foreground text-[11px]">▶</span>
+            <span className="text-foreground/75 text-[11px]">▶</span>
             <span className="text-white font-semibold">Candidate queue</span>
           </div>
 
@@ -745,7 +745,7 @@ function AdminPage() {
             <button
               onClick={() => setShowActivity(!showActivity)}
               className={`p-1.5 rounded-lg border transition-colors cursor-pointer hover:bg-secondary ${
-                showActivity ? "bg-secondary border-border text-white" : "border-border text-muted-foreground"
+                showActivity ? "bg-secondary border-border text-white" : "border-border text-foreground/75"
               }`}
               title="Toggle Calendar & Activity Panel"
             >
@@ -777,7 +777,7 @@ function AdminPage() {
                 key={t.id}
                 onClick={() => setActiveTab(t.id as any)}
                 className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                  activeTab === t.id ? "bg-card text-foreground font-semibold shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  activeTab === t.id ? "bg-card text-foreground font-semibold shadow-sm" : "text-foreground/75 hover:text-foreground"
                 }`}
               >
                 {t.label}
@@ -822,12 +822,12 @@ function AdminPage() {
           {selectedAssignment && (
             <div className="mb-6 bg-muted/35 border border-border/80 p-4 rounded-xl flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Active Filter Template:</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-foreground/75">Active Filter Template:</span>
                 <h3 className="text-[14px] font-bold text-white mt-0.5">{selectedAssignment.title}</h3>
               </div>
               <button
                 onClick={() => setSelectedAssignmentId("")}
-                className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer"
+                className="text-xs text-foreground/75 hover:text-foreground underline cursor-pointer"
               >
                 Show All Assignments
               </button>
@@ -837,7 +837,7 @@ function AdminPage() {
           {/* Table Container */}
           <div className="overflow-hidden rounded-xl border border-border/60 bg-card/30 shadow-md">
             <table className="w-full text-left text-[12.5px] border-collapse">
-              <thead className="border-b border-border/80 bg-muted/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
+              <thead className="border-b border-border/80 bg-muted/40 text-[10.5px] uppercase tracking-wider text-foreground/90">
                 <tr>
                   <th className="px-4 py-3.5 font-bold">Candidate</th>
                   <th className="px-4 py-3.5 font-bold">Status</th>
@@ -847,7 +847,7 @@ function AdminPage() {
               <tbody className="divide-y divide-neutral-800/40">
                 {filteredCandidates.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-12 text-center text-muted-foreground font-light bg-background/20">
+                    <td colSpan={3} className="px-4 py-12 text-center text-foreground/75 font-light bg-background/20">
                       No candidates in this queue list.
                     </td>
                   </tr>
@@ -877,7 +877,7 @@ function AdminPage() {
                         <td className="px-4 py-4">
                           <div className="flex flex-col">
                             <span className="font-bold text-white">{c.email}</span>
-                            <span className="text-[11px] text-muted-foreground truncate mt-0.5 max-w-[280px]">
+                            <span className="text-[11px] text-foreground/75 truncate mt-0.5 max-w-[280px]">
                               {c.assignments?.title ?? "—"}
                             </span>
                           </div>
@@ -888,14 +888,14 @@ function AdminPage() {
                             <span className="text-[12px] font-semibold">{statusBadge(c)}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-muted-foreground font-medium">
+                        <td className="px-4 py-4 text-foreground/75 font-medium">
                           {c.started_at ? (
                             <div className="flex flex-col">
                               <span>{getRemainingText(c, serverNow)}</span>
-                              <span className="text-[10px] text-muted-foreground mt-0.5">Ends {new Date(c.ends_at!).toLocaleDateString()}</span>
+                              <span className="text-[10px] text-foreground/75 mt-0.5">Ends {new Date(c.ends_at!).toLocaleDateString()}</span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">Not started yet</span>
+                            <span className="text-foreground/75">Not started yet</span>
                           )}
                         </td>
                       </tr>
@@ -918,7 +918,7 @@ function AdminPage() {
             <h3 className="text-xs font-bold uppercase tracking-wider text-white">Schedule</h3>
             <button
               onClick={() => setShowActivity(false)}
-              className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors text-xs"
+              className="text-foreground/75 hover:text-foreground cursor-pointer transition-colors text-xs"
             >
               ✕
             </button>
@@ -929,11 +929,11 @@ function AdminPage() {
 
             {/* UP NEXT Activities */}
             <div className="space-y-4">
-              <h4 className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Activity Log</h4>
+              <h4 className="text-[9px] font-bold uppercase tracking-wider text-foreground/90">Activity Log</h4>
               
               <div className="space-y-3.5">
                 {auditLogs.length === 0 ? (
-                  <p className="text-[11.5px] text-muted-foreground font-light">No activity recorded yet.</p>
+                  <p className="text-[11.5px] text-foreground/75 font-light">No activity recorded yet.</p>
                 ) : (
                   auditLogs.slice(0, 8).map((log, idx) => {
                     // Extract candidate email
@@ -945,13 +945,13 @@ function AdminPage() {
                         key={log.id}
                         className="pl-3.5 border-l-2 border-border text-[12px] flex flex-col gap-1 transition-all hover:border-neutral-500"
                       >
-                        <span className="text-[10px] font-semibold text-muted-foreground font-mono">
+                        <span className="text-[10px] font-semibold text-foreground/75 font-mono">
                           {new Date(log.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
                         </span>
                         <span className="font-bold text-white line-clamp-1 leading-tight">
                           {log.event.replace(/_/g, " ").toUpperCase()}
                         </span>
-                        <span className="text-[11px] text-muted-foreground font-light leading-normal truncate">
+                        <span className="text-[11px] text-foreground/75 font-light leading-normal truncate">
                           {candEmail}
                         </span>
                       </div>
@@ -973,12 +973,12 @@ function AdminPage() {
             <div className="flex-1 overflow-y-auto scrollbar-thin space-y-6 pr-2">
               <div className="flex items-center justify-between border-b border-border/60 pb-4">
                 <div>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Candidate Info</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-foreground/90">Candidate Info</span>
                   <h2 className="text-base font-bold text-white mt-1 break-all">{selectedCandidate.email}</h2>
                 </div>
                 <button
                   onClick={() => setSelectedCandidate(null)}
-                  className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-semibold"
+                  className="text-foreground/75 hover:text-foreground cursor-pointer text-sm font-semibold"
                 >
                   ✕ Close
                 </button>
@@ -987,18 +987,18 @@ function AdminPage() {
               {/* Status block */}
               <div className="panel p-4 bg-background/40 border border-border/60 rounded-xl space-y-2">
                 <div className="flex justify-between items-center text-[12.5px]">
-                  <span className="text-muted-foreground font-medium">Test Status:</span>
+                  <span className="text-foreground/75 font-medium">Test Status:</span>
                   <span className="font-bold text-white">{statusBadge(selectedCandidate)}</span>
                 </div>
                 {selectedCandidate.started_at && (
                   <>
                     <div className="flex justify-between items-center text-[12.5px] border-t border-border/40 pt-2">
-                      <span className="text-muted-foreground font-medium">Timer Status:</span>
+                      <span className="text-foreground/75 font-medium">Timer Status:</span>
                       <span className="font-bold text-white">{getRemainingText(selectedCandidate, serverNow)}</span>
                     </div>
                     <div className="flex justify-between items-center text-[12.5px]">
-                      <span className="text-muted-foreground font-medium">Started At:</span>
-                      <span className="text-muted-foreground font-semibold">{new Date(selectedCandidate.started_at).toLocaleString()}</span>
+                      <span className="text-foreground/75 font-medium">Started At:</span>
+                      <span className="text-foreground/75 font-semibold">{new Date(selectedCandidate.started_at).toLocaleString()}</span>
                     </div>
                   </>
                 )}
@@ -1006,16 +1006,16 @@ function AdminPage() {
 
               {/* Unique branch details */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Git branch details</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-foreground/90">Git branch details</h4>
                 
                 <div className="rounded-xl border border-border bg-background p-4 font-mono text-[12px] text-foreground/90 space-y-3 overflow-x-auto">
                   <p>
-                    <span className="text-muted-foreground"># Repository URL:</span>
+                    <span className="text-foreground/75"># Repository URL:</span>
                     <br />
                     <span className="text-foreground/80 font-semibold">{selectedCandidate.assignments?.github_repo || "—"}</span>
                   </p>
                   <p className="border-t border-neutral-900 pt-3">
-                    <span className="text-muted-foreground"># Candidate Branch:</span>
+                    <span className="text-foreground/75"># Candidate Branch:</span>
                     <br />
                     <strong className="text-sky-400 font-bold">{getCandidateBranch(selectedCandidate.email, selectedCandidate.id)}</strong>
                   </p>
@@ -1101,7 +1101,7 @@ function AdminPage() {
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-semibold"
+                className="text-foreground/75 hover:text-foreground cursor-pointer text-sm font-semibold"
               >
                 ✕ Close
               </button>
@@ -1109,7 +1109,7 @@ function AdminPage() {
 
             {/* Template Selector Inside Modal */}
             <div className="mb-6 rounded-xl border border-border bg-secondary/60 p-4">
-              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-foreground/75">
                 Quick Load from Template
               </label>
               <select
@@ -1136,7 +1136,7 @@ function AdminPage() {
 
             <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">Title</label>
+                <label className="mb-1 block text-[11px] font-semibold text-foreground/75">Title</label>
                 <input
                   required
                   value={title}
@@ -1146,7 +1146,7 @@ function AdminPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">
+                <label className="mb-1 block text-[11px] font-semibold text-foreground/75">
                   Duration (hours)
                 </label>
                 <input
@@ -1161,7 +1161,7 @@ function AdminPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">
+                <label className="mb-1 block text-[11px] font-semibold text-foreground/75">
                   GitHub repo URL
                 </label>
                 <input
@@ -1174,7 +1174,7 @@ function AdminPage() {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">
+                <label className="mb-1 block text-[11px] font-semibold text-foreground/75">
                   Problem statement
                 </label>
                 <textarea
@@ -1190,7 +1190,7 @@ function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-foreground/75 hover:text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1213,13 +1213,13 @@ function AdminPage() {
           <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[15px] font-bold text-foreground">Invite Admin</h2>
-              <button onClick={() => setShowInviteAdmin(false)} className="text-muted-foreground hover:text-foreground cursor-pointer">
+              <button onClick={() => setShowInviteAdmin(false)} className="text-foreground/75 hover:text-foreground cursor-pointer">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
-            <p className="text-[12.5px] text-muted-foreground mb-4">
+            <p className="text-[12.5px] text-foreground/75 mb-4">
               Enter the email address of the person you want to invite. They'll receive a sign-in link and automatically get admin access when they click it.
             </p>
             {adminInviteStatus === "sent" ? (
@@ -1229,8 +1229,8 @@ function AdminPage() {
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
                 <p className="text-[13px] font-medium text-foreground">Invite sent!</p>
-                <p className="text-[12px] text-muted-foreground">They'll receive an email with a sign-in link.</p>
-                <button onClick={() => { setShowInviteAdmin(false); setAdminInviteStatus("idle"); }} className="mt-2 text-sm underline text-muted-foreground hover:text-foreground cursor-pointer">Close</button>
+                <p className="text-[12px] text-foreground/75">They'll receive an email with a sign-in link.</p>
+                <button onClick={() => { setShowInviteAdmin(false); setAdminInviteStatus("idle"); }} className="mt-2 text-sm underline text-foreground/75 hover:text-foreground cursor-pointer">Close</button>
               </div>
             ) : (
               <form onSubmit={handleInviteAdmin} className="space-y-4">
@@ -1240,13 +1240,13 @@ function AdminPage() {
                   placeholder="colleague@stance.health"
                   value={adminInviteEmail}
                   onChange={(e) => setAdminInviteEmail(e.target.value)}
-                  className="w-full bg-secondary border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/30"
+                  className="w-full bg-secondary border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground placeholder:text-foreground/75 focus:outline-none focus:ring-1 focus:ring-foreground/30"
                 />
                 {adminInviteStatus === "error" && (
                   <p className="text-[12px] text-red-400">Failed to send invite. Please try again.</p>
                 )}
                 <div className="flex gap-2 justify-end">
-                  <button type="button" onClick={() => setShowInviteAdmin(false)} className="px-4 py-2 text-[12.5px] text-muted-foreground hover:text-foreground rounded-lg border border-border hover:bg-secondary/40 cursor-pointer transition-colors">
+                  <button type="button" onClick={() => setShowInviteAdmin(false)} className="px-4 py-2 text-[12.5px] text-foreground/75 hover:text-foreground rounded-lg border border-border hover:bg-secondary/40 cursor-pointer transition-colors">
                     Cancel
                   </button>
                   <button type="submit" disabled={adminInviteStatus === "sending"} className="bg-foreground hover:bg-foreground/90 disabled:opacity-50 text-background px-5 py-2 text-[12.5px] font-bold rounded-lg cursor-pointer transition-colors">
