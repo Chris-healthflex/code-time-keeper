@@ -627,9 +627,13 @@ function QuestionPage({
 // ─── Timed assignment view (after timer starts - with sliding steps!) ───────────────────────────────
 
 function TimedPage({ view, token }: { view: CandidateView; token: string }) {
+  const storageKey = `gh-access-${token}`;
+  const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+  const savedParsed = saved ? JSON.parse(saved) as { username: string; status: "invited" | "already" } : null;
+
   const [now, setNow] = useState(() => Date.now());
-  const [ghUsername, setGhUsername] = useState("");
-  const [ghStatus, setGhStatus] = useState<"idle" | "loading" | "invited" | "already" | "error">("idle");
+  const [ghUsername, setGhUsername] = useState(savedParsed?.username ?? "");
+  const [ghStatus, setGhStatus] = useState<"idle" | "loading" | "invited" | "already" | "error">(savedParsed?.status ?? "idle");
   const [ghError, setGhError] = useState<string | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
@@ -641,7 +645,9 @@ function TimedPage({ view, token }: { view: CandidateView; token: string }) {
     setGhError(null);
     try {
       const res = await requestGithubAccess({ data: { token, githubUsername: ghUsername.trim() } });
-      setGhStatus(res.alreadyCollaborator ? "already" : "invited");
+      const newStatus = res.alreadyCollaborator ? "already" : "invited";
+      setGhStatus(newStatus);
+      localStorage.setItem(storageKey, JSON.stringify({ username: ghUsername.trim(), status: newStatus }));
     } catch (err) {
       setGhStatus("error");
       setGhError(err instanceof Error ? err.message : "Failed. Try again.");
