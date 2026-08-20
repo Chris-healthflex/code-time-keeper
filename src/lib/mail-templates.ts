@@ -150,6 +150,37 @@ Good luck,
 Stance Health`;
 }
 
+// ─── Template 1b — Assignment started ──────────────────────────────────────
+
+export function startedHtml(opts: { title: string; endsAt: string }) {
+  return shell({
+    preheader: "Your timer has started. Good luck!",
+    badge: "Timer Started",
+    headline: "Your timer is running.",
+    body: [
+      p(`Your ${opts.title} assignment has officially started. Focus and build something great.`),
+      infoBox([
+        { label: "Assignment", value: opts.title },
+        { label: "Deadline", value: new Date(opts.endsAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }) + " UTC" },
+      ]),
+      p("Push your code to your GitHub branch before the deadline. You can check the assignment details and your remaining time on the assignment page."),
+      p("<strong>Good luck!</strong>"),
+    ].join(""),
+    footer: "This email was sent because you started a Stance Health coding assignment.",
+  });
+}
+
+export function startedText(opts: { title: string; endsAt: string }) {
+  return `Your timer has started for: ${opts.title}
+
+Deadline: ${new Date(opts.endsAt).toUTCString()}
+
+Push your code to your GitHub branch before the deadline.
+
+Good luck!
+— Stance Health`;
+}
+
 // ─── Template 2 — Magic link / sign-in ─────────────────────────────────────
 
 export function magicLinkHtml(opts: { link: string; expiresMinutes?: number }) {

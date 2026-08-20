@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   invitationHtml, invitationText,
+  startedHtml, startedText,
   magicLinkHtml, magicLinkText,
   timeUpHtml, timeUpText,
   submissionReceivedHtml, submissionReceivedText,
@@ -117,11 +118,11 @@ export function magicLinkMail(opts: { link: string; expiresMinutes?: number }) {
   };
 }
 
-export function startedMail(opts: { title: string; endsAt: string; repo: string }) {
+export function startedMail(opts: { title: string; endsAt: string; repo?: string }) {
   return {
     subject: `Assignment started: ${opts.title}`,
-    html: `<p style="font-family:sans-serif">Your timer has started.<br/><br/>Deadline: ${opts.endsAt}<br/>Repository: ${opts.repo}</p>`,
-    text: `Your timer has started.\n\nDeadline (UTC): ${opts.endsAt}\nRepository: ${opts.repo}\n\nPush your code before the timer ends.`,
+    html: startedHtml({ title: opts.title, endsAt: opts.endsAt }),
+    text: startedText({ title: opts.title, endsAt: opts.endsAt }),
   };
 }
 
