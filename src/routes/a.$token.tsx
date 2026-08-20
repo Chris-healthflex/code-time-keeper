@@ -35,7 +35,7 @@ function formatRemaining(ms: number): string {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-8 border-t border-border/60 pt-6">
-      <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
+      <h3 className="text-[12px] font-semibold text-foreground/75 uppercase tracking-wider">{title}</h3>
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -242,7 +242,7 @@ function InteractiveBrief({ text }: { text: string }) {
         <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "clamp(28px, 4vw, 48px)", lineHeight: 1.05, letterSpacing: "-0.04em", color: "var(--foreground)" }}>
           Turn a clinical audio session into a structured assessment report.
         </h2>
-        <p style={{ marginTop: 20, fontSize: 15, color: "var(--muted-foreground)", lineHeight: 1.65, fontWeight: 400 }}>
+        <p style={{ marginTop: 20, fontSize: 15, color: "var(--foreground)", lineHeight: 1.65, fontWeight: 400 }}>
           You are given a WAV recording of a real clinician-patient session. Build the pipeline that transcribes it, extracts the clinical data, and outputs it in the exact JSON schema our production frontend consumes.
         </p>
 
@@ -272,9 +272,9 @@ function InteractiveBrief({ text }: { text: string }) {
           </div>
           <div style={{ minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--foreground)", letterSpacing: "-0.01em" }}>clinical_assessment.wav</p>
-            <p style={{ margin: 0, fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>Your input file · 8.9 MB · WAV audio</p>
+            <p style={{ margin: 0, fontSize: 11, color: "var(--foreground)", marginTop: 2 }}>Your input file · 8.9 MB · WAV audio</p>
           </div>
-          <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Download</span>
+          <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, color: "var(--foreground)", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Download</span>
         </a>
 
         <ol style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -298,19 +298,19 @@ function InteractiveBrief({ text }: { text: string }) {
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, fontVariantNumeric: "tabular-nums", flexShrink: 0, color: isActive ? "var(--foreground)" : "var(--muted-foreground)", fontFamily: "monospace", opacity: isActive ? 1 : 0.45 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, fontVariantNumeric: "tabular-nums", flexShrink: 0, color: isActive ? "var(--foreground)" : "var(--foreground)", fontFamily: "monospace", opacity: isActive ? 1 : 0.45 }}>
                         {s.num}
                       </span>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: isActive ? "var(--foreground)" : "var(--muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: isActive ? "var(--foreground)" : "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {s.label}
                       </span>
                     </div>
-                    <span style={{ fontSize: 12, color: "var(--muted-foreground)", flexShrink: 0, opacity: isActive ? 1 : 0.5 }}>
+                    <span style={{ fontSize: 12, color: "var(--foreground)", flexShrink: 0, opacity: isActive ? 1 : 0.5 }}>
                       {s.badge}
                     </span>
                   </div>
                   {isActive && (
-                    <p style={{ marginTop: 8, marginLeft: 32, fontSize: 13, color: "var(--muted-foreground)", lineHeight: 1.6 }}>
+                    <p style={{ marginTop: 8, marginLeft: 32, fontSize: 13, color: "var(--foreground)", lineHeight: 1.6 }}>
                       {s.desc}
                     </p>
                   )}
@@ -344,10 +344,10 @@ function InteractiveBrief({ text }: { text: string }) {
 
         {/* Panel header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderBottom: "1px solid var(--border)" }}>
-          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted-foreground)" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--foreground)" }}>
             Problem Brief
           </span>
-          <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>Step {active + 1} of {HIW_STEPS.length}</span>
+          <span style={{ fontSize: 12, color: "var(--foreground)" }}>Step {active + 1} of {HIW_STEPS.length}</span>
         </div>
 
         {/* Panel body */}
@@ -355,19 +355,19 @@ function InteractiveBrief({ text }: { text: string }) {
           {/* Title row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
             <span style={{ fontSize: 22, fontWeight: 700, color: "var(--foreground)", letterSpacing: "-0.02em" }}>{step.title}</span>
-            <span style={{ fontSize: 11, background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--muted-foreground)", padding: "3px 10px", borderRadius: 6, fontFamily: "monospace", flexShrink: 0 }}>
+            <span style={{ fontSize: 11, background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--foreground)", padding: "3px 10px", borderRadius: 6, fontFamily: "monospace", flexShrink: 0 }}>
               {step.tag}
             </span>
           </div>
-          <p style={{ fontSize: 12, color: "var(--muted-foreground)", marginBottom: 18 }}>{step.meta}</p>
+          <p style={{ fontSize: 12, color: "var(--foreground)", marginBottom: 18 }}>{step.meta}</p>
 
           {/* Rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
             {step.rows.map((row, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--secondary)", border: "1px solid var(--border)", borderRadius: 10, padding: "11px 16px" }}>
-                <span style={{ fontSize: 11, color: "var(--muted-foreground)", fontFamily: "monospace", flexShrink: 0, width: 38 }}>{row.hash}</span>
+                <span style={{ fontSize: 11, color: "var(--foreground)", fontFamily: "monospace", flexShrink: 0, width: 38 }}>{row.hash}</span>
                 <span style={{ fontSize: 13.5, color: "var(--foreground)", flex: 1, opacity: 0.88 }}>{row.label}</span>
-                <span style={{ fontSize: 11, background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--muted-foreground)", padding: "2px 8px", borderRadius: 5, fontWeight: 500, flexShrink: 0 }}>
+                <span style={{ fontSize: 11, background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--foreground)", padding: "2px 8px", borderRadius: 5, fontWeight: 500, flexShrink: 0 }}>
                   {row.chip}
                 </span>
               </div>
@@ -375,7 +375,7 @@ function InteractiveBrief({ text }: { text: string }) {
           </div>
 
           {step.extra && (
-            <p style={{ fontSize: 12, color: "var(--muted-foreground)", paddingBottom: 16 }}>+ {step.extra}</p>
+            <p style={{ fontSize: 12, color: "var(--foreground)", paddingBottom: 16 }}>+ {step.extra}</p>
           )}
         </div>
       </div>
@@ -444,7 +444,7 @@ function QuestionPage({
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <img src={logoWhite} alt="Stance Health" className="h-7 w-auto invert dark:invert-0" />
           <div className="flex items-center gap-4">
-            <span className="text-[12px] text-muted-foreground">{preview.email}</span>
+            <span className="text-[12px] text-foreground/75">{preview.email}</span>
           </div>
         </div>
       </header>
@@ -455,8 +455,8 @@ function QuestionPage({
         {/* Left Side Labelled Rail */}
         <aside className="space-y-6 flex flex-col justify-start">
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Setup Checklist</h2>
-            <p className="text-[12px] text-muted-foreground mt-1">Complete each step below to unlock and reveal the assignment question.</p>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground/75">Setup Checklist</h2>
+            <p className="text-[12px] text-foreground/75 mt-1">Complete each step below to unlock and reveal the assignment question.</p>
           </div>
 
           <nav className="relative flex flex-col gap-6 pl-2 mt-4">
@@ -475,7 +475,7 @@ function QuestionPage({
                         ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.2)]"
                         : isActive
                           ? "bg-primary border-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--color-ring),0.3)] ring-4 ring-primary/10"
-                          : "bg-background border-border text-muted-foreground"
+                          : "bg-background border-border text-foreground/75"
                     }`}
                   >
                     {isCompleted ? (
@@ -489,10 +489,10 @@ function QuestionPage({
 
                   {/* Step label */}
                   <div className="flex flex-col">
-                    <span className={`text-[13px] font-semibold transition-colors ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
+                    <span className={`text-[13px] font-semibold transition-colors ${isActive ? "text-foreground" : "text-foreground/75"}`}>
                       {s.label}
                     </span>
-                    <span className="text-[11px] text-muted-foreground leading-normal mt-0.5">{s.desc}</span>
+                    <span className="text-[11px] text-foreground/75 leading-normal mt-0.5">{s.desc}</span>
                   </div>
                 </div>
               );
@@ -513,14 +513,14 @@ function QuestionPage({
                 </p>
                 
                 <div className="p-5 rounded-xl border border-border/70 bg-secondary/35 mt-6 space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Assessment details:</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-foreground/75">Assessment details:</h4>
                   <div className="grid grid-cols-2 gap-4 text-[13.5px]">
                     <div>
-                      <span className="text-muted-foreground block text-[11px]">TOPIC</span>
+                      <span className="text-foreground/75 block text-[11px]">TOPIC</span>
                       <strong className="font-semibold text-foreground">{preview.title}</strong>
                     </div>
                     <div>
-                      <span className="text-muted-foreground block text-[11px]">TIMED LIMIT</span>
+                      <span className="text-foreground/75 block text-[11px]">TIMED LIMIT</span>
                       <strong className="font-semibold text-foreground">{preview.durationHours} hours</strong>
                     </div>
                   </div>
@@ -544,7 +544,7 @@ function QuestionPage({
                     "Do not close this browser tab during the assignment. It maintains a secure sync with our timing servers.",
                   ].map((rule, idx) => (
                     <li key={idx} className="flex gap-3 text-[13.5px] leading-relaxed text-foreground/90 font-light">
-                      <span className="mt-[2px] flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground border border-border">
+                      <span className="mt-[2px] flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground/75 border border-border">
                         {idx + 1}
                       </span>
                       <span>{rule}</span>
@@ -564,7 +564,7 @@ function QuestionPage({
 
                 <div className="mt-6 rounded-xl bg-secondary border border-border p-5">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Important</h4>
-                  <p className="text-[13px] leading-relaxed text-muted-foreground mt-1">
+                  <p className="text-[13px] leading-relaxed text-foreground/75 mt-1">
                     Once you click "Accept & Start Timer", your {preview.durationHours}-hour timer will begin immediately. The timer is server-authoritative and cannot be paused or reset under any circumstances.
                   </p>
                 </div>
@@ -666,7 +666,7 @@ function TimedPage({ view }: { view: CandidateView }) {
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <img src={logoWhite} alt="Stance Health" className="h-6 w-auto invert dark:invert-0" />
           <div className="flex items-center gap-4">
-            <span className="text-[12px] text-muted-foreground">{view.email}</span>
+            <span className="text-[12px] text-foreground/75">{view.email}</span>
           </div>
         </div>
       </header>
@@ -676,7 +676,7 @@ function TimedPage({ view }: { view: CandidateView }) {
         {/* Timer HUD — flip disk display */}
         <div className="mb-10 rounded-2xl border border-border bg-card px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-foreground/75">
               {isSubmitted ? "Status" : isGrace ? "Grace period remaining" : "Time remaining"}
             </p>
             <div className="flex items-center gap-4 text-right">
@@ -686,7 +686,7 @@ function TimedPage({ view }: { view: CandidateView }) {
                 </p>
               )}
               {!isSubmitted && targetIso && (
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[13px] text-foreground/75">
                   Ends {new Date(targetIso).toLocaleString(undefined, { timeZoneName: "short" })}
                 </p>
               )}
@@ -700,15 +700,12 @@ function TimedPage({ view }: { view: CandidateView }) {
           <div className="mx-auto max-w-xs sm:max-w-sm">
             <FlipDiskMatrix display={(() => {
               if (isSubmitted) return "DONE";
-              if (remaining <= 0) return "00:00";
+              if (remaining <= 0) return "00:00:00";
               const totalSec = Math.floor(remaining / 1000);
               const hours = Math.floor(totalSec / 3600);
               const mins = Math.floor((totalSec % 3600) / 60);
               const secs = totalSec % 60;
-              if (hours > 0) {
-                return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-              }
-              return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+              return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
             })()} />
           </div>
 
@@ -728,14 +725,14 @@ function TimedPage({ view }: { view: CandidateView }) {
         </h1>
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
-          <span className="text-muted-foreground">Submit to:</span>
+          <span className="text-foreground/75">Submit to:</span>
           {isUnblurred ? (
             <a href={view.githubRepo} target="_blank" rel="noopener noreferrer"
               className="rounded border border-border bg-secondary px-2.5 py-0.5 font-mono text-[12px] text-foreground hover:bg-secondary/80 transition-colors animate-in fade-in">
               {repoName}
             </a>
           ) : (
-            <span className="rounded border border-border bg-secondary px-2.5 py-0.5 font-mono text-[12px] text-muted-foreground select-none blur-[3.5px]">
+            <span className="rounded border border-border bg-secondary px-2.5 py-0.5 font-mono text-[12px] text-foreground/75 select-none blur-[3.5px]">
               {repoName}
             </span>
           )}
@@ -743,7 +740,7 @@ function TimedPage({ view }: { view: CandidateView }) {
 
         {/* Problem Statement */}
         <section className="mt-10 rounded-2xl border border-border bg-card p-6 sm:p-8">
-          <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground border-b border-border pb-3 mb-7">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-foreground/75 border-b border-border pb-3 mb-7">
             Problem statement
           </p>
           <InteractiveBrief text={view.problemStatement ?? ""} />
@@ -752,7 +749,7 @@ function TimedPage({ view }: { view: CandidateView }) {
         {/* Branch & Git */}
         {view.email && view.candidateId && (
           <div className="mt-8 rounded-xl border border-border bg-card px-6 py-6 sm:px-8">
-            <h3 className="text-[11px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
+            <h3 className="text-[11px] font-bold tracking-[0.12em] text-foreground/75 uppercase">
               Your Dedicated Candidate Branch
             </h3>
             <p className="mt-2 text-[13.5px] leading-relaxed text-foreground/80 font-light">
@@ -760,12 +757,12 @@ function TimedPage({ view }: { view: CandidateView }) {
             </p>
             {isUnblurred ? (
               <div className="mt-3 rounded-lg border border-border bg-background p-4 font-mono text-[12.5px] text-foreground/80 space-y-1.5 overflow-x-auto animate-in fade-in">
-                <p><span className="text-muted-foreground"># Your unique branch:</span> <strong className="text-foreground">{branchName}</strong></p>
-                <p className="text-muted-foreground"># How to push:</p>
-                <p className="text-muted-foreground">git checkout -b {branchName}</p>
-                <p className="text-muted-foreground">git add .</p>
-                <p className="text-muted-foreground">git commit -m "feat: complete assignment"</p>
-                <p className="text-muted-foreground">git push -u origin {branchName}</p>
+                <p><span className="text-foreground/75"># Your unique branch:</span> <strong className="text-foreground">{branchName}</strong></p>
+                <p className="text-foreground/75"># How to push:</p>
+                <p className="text-foreground/75">git checkout -b {branchName}</p>
+                <p className="text-foreground/75">git add .</p>
+                <p className="text-foreground/75">git commit -m "feat: complete assignment"</p>
+                <p className="text-foreground/75">git push -u origin {branchName}</p>
               </div>
             ) : (
               <div className="mt-3 select-none blur-[4.5px] rounded-lg border border-border bg-background p-4 font-mono text-[12.5px] text-foreground/80 space-y-1.5 overflow-x-auto">
@@ -778,18 +775,18 @@ function TimedPage({ view }: { view: CandidateView }) {
               </div>
             )}
             {!isUnblurred ? (
-              <p className="mt-3 text-[12px] text-muted-foreground border border-border rounded-md p-2.5">
+              <p className="mt-3 text-[12px] text-foreground/75 border border-border rounded-md p-2.5">
                 🔒 GitHub details are blurred. They unlock when your timer is complete or your admin unblurs them.
               </p>
             ) : (
-              <p className="mt-3 text-[12px] text-muted-foreground">
+              <p className="mt-3 text-[12px] text-foreground/75">
                 Once pushed, the system will sync automatically.
               </p>
             )}
           </div>
         )}
 
-        <p className="mt-8 text-center text-[11.5px] text-muted-foreground">
+        <p className="mt-8 text-center text-[11.5px] text-foreground/75">
           Timer is controlled server-side. Do not close this page until you have pushed your code.
           {isGrace && " You are in the final 10-minute submission window."}
         </p>
@@ -877,6 +874,13 @@ function CandidatePage() {
           }
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "candidates", filter: `id=eq.${view.candidateId}` },
+        () => {
+          toError("Your access has been revoked. Please contact the admin.");
+        },
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [phase, view?.candidateId, token]);
@@ -898,7 +902,7 @@ function CandidatePage() {
   if (phase === "loading") {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-sm text-muted-foreground">Loading your assignment…</p>
+        <p className="text-sm text-foreground/75">Loading your assignment…</p>
       </main>
     );
   }
@@ -908,7 +912,7 @@ function CandidatePage() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
         <div className="max-w-md">
           <h1 className="text-xl font-medium tracking-tight text-foreground">Access closed</h1>
-          <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
+          <p className="mt-3 text-[14px] leading-relaxed text-foreground/75">
             {errorMsg ?? "This assignment link is no longer available."}
           </p>
         </div>
