@@ -46,7 +46,7 @@ export const resolveAuthDestination = createServerFn({ method: "POST" })
         .from("admin_invites")
         .select("id")
         .eq("email", email)
-        .is("accepted_at", null)
+        .is("claimed_at", null)
         .maybeSingle();
 
       if (adminInvite) {
@@ -59,7 +59,7 @@ export const resolveAuthDestination = createServerFn({ method: "POST" })
         }
         await supabaseAdmin
           .from("admin_invites")
-          .update({ accepted_at: new Date().toISOString() })
+          .update({ claimed_at: new Date().toISOString() })
           .eq("id", adminInvite.id);
         return { destination: "admin" as const, path: "/admin/dashboard" };
       }
