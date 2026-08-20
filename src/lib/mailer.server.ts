@@ -19,35 +19,67 @@ interface MailInput {
   text: string;
 }
 
+async function getGmailAccessToken(): Promise<string> {
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: process.env["GMAIL_CLIENT_ID"] ?? "",
+      client_secret: process.env["GMAIL_CLIENT_SECRET"] ?? "",
+      refresh_token: process.env["GMAIL_REFRESH_TOKEN"] ?? "",
+      grant_type: "refresh_token",
+    }),
+  });
+  const data = await res.json() as { access_token?: string; error?: string; error_description?: string };
+  if (!data.access_token) throw new Error(`token_error: ${data.error} — ${data.error_description}`);
+  return data.access_token;
+}
+
+async function sendViaGmail(input: MailInput, from: string): Promise<{ sent: boolean; reason?: string }> {
+  try {
+    const accessToken = await getGmailAccessToken();
+
+    const mime = [
+      `From: ${from}`,
+      `To: ${input.to}`,
+      `Subject: ${input.subject}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: text/html; charset=UTF-8`,
+      ``,
+      input.html,
+    ].join("\r\n");
+
+    const encoded = Buffer.from(mime).toString("base64url");
+
+    const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ raw: encoded }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      return { sent: false, reason: `gmail_${res.status}: ${body}` };
+    }
+    return { sent: true };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "gmail_error";
+    return { sent: false, reason: msg };
+  }
+}
+
 export async function sendMail(input: MailInput): Promise<{ sent: boolean; reason?: string }> {
   let sent = false;
   let reason: string | undefined;
+  const from = process.env["MAIL_FROM"] ?? "Stance Health <thrisha.suvarna@stance.health>";
 
   try {
-    const apiKey = process.env["RESEND_API_KEY"] ?? process.env["LOVABLE_API_KEY"];
-    const fromAddress = process.env["MAIL_FROM"] ?? `Stance Health <assignments@ai-assignments.stance.health>`;
-
-    if (!apiKey) {
-      reason = "mail_api_key_not_configured";
-    } else if (process.env["RESEND_API_KEY"]) {
-      // Resend
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ from: fromAddress, to: input.to, subject: input.subject, html: input.html, text: input.text }),
-      });
-      sent = res.ok;
-      if (!res.ok) reason = `resend_${res.status}`;
-    } else {
-      // Lovable fallback
-      const res = await fetch("https://api.lovable.dev/v1/emails/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ from: fromAddress, to: input.to, subject: input.subject, html: input.html, text: input.text }),
-      });
-      sent = res.ok;
-      if (!res.ok) reason = `lovable_${res.status}`;
-    }
+    const result = await sendViaGmail(input, from);
+    sent = result.sent;
+    reason = result.reason;
   } catch (err) {
     reason = err instanceof Error ? err.message : "unknown_error";
   }

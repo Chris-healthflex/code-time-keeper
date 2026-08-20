@@ -39,3 +39,4 @@ dist-ssr
 .gstack/
 scripts/test-mail-resend-raw.js
 scripts/test-resend.js
+scripts/get-gmail-token.mjs
