@@ -301,7 +301,7 @@ export const inviteAdmin = createServerFn({ method: "POST" })
     // Record the invite (upsert so re-inviting is safe)
     const { error: invErr } = await supabaseAdmin
       .from("admin_invites")
-      .upsert({ email, invited_by: context.userId }, { onConflict: "email" });
+      .upsert({ email }, { onConflict: "email" });
     if (invErr) throw new Error(invErr.message);
 
     // Try invite link first; fall back to magic link if user already exists
