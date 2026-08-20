@@ -13,6 +13,7 @@ import {
   inviteAdmin,
   checkSubmission,
   toggleUnblurCandidate,
+  grantGithubAccess,
   deleteCandidate,
   selectCandidate,
   listAuditLogs,
@@ -343,6 +344,10 @@ function AdminPage() {
   const [adminInviteStatus, setAdminInviteStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [adminInviteError, setAdminInviteError] = useState<string | null>(null);
 
+  const [githubUsername, setGithubUsername] = useState("");
+  const [githubGrantStatus, setGithubGrantStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [githubGrantError, setGithubGrantError] = useState<string | null>(null);
+
   // Selected candidate for detail view overlay
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateRow | null>(null);
 
@@ -542,6 +547,19 @@ function AdminPage() {
       setError(err instanceof Error ? err.message : "Toggle unblur failed");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleGrantGithubAccess() {
+    if (!selectedCandidate || !githubUsername.trim()) return;
+    setGithubGrantStatus("loading");
+    setGithubGrantError(null);
+    try {
+      await grantGithubAccess({ data: { candidateId: selectedCandidate.id, githubUsername: githubUsername.trim() } });
+      setGithubGrantStatus("ok");
+    } catch (err) {
+      setGithubGrantStatus("error");
+      setGithubGrantError(err instanceof Error ? err.message : "Failed to grant access");
     }
   }
 
@@ -872,7 +890,7 @@ function AdminPage() {
                     return (
                       <tr
                         key={c.id}
-                        onClick={() => setSelectedCandidate(c)}
+                        onClick={() => { setSelectedCandidate(c); setGithubUsername(""); setGithubGrantStatus("idle"); setGithubGrantError(null); }}
                         className={`hover:bg-secondary/35 cursor-pointer transition-colors ${
                           isSelected ? "bg-secondary/60" : ""
                         }`}
@@ -1046,6 +1064,38 @@ function AdminPage() {
 
             {/* Bottom Actions inside overlay */}
             <div className="mt-8 border-t border-border/60 pt-4 flex flex-col gap-3">
+
+              {/* GitHub push access */}
+              <div className="flex flex-col gap-2">
+                <p className="text-[11px] text-foreground/50 leading-relaxed">
+                  Enter the candidate's GitHub username to grant push access to the assignment repo.
+                  {" "}<span className="text-amber-400/80">Without this, their push will fail.</span>
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={githubUsername}
+                    onChange={(e) => { setGithubUsername(e.target.value); setGithubGrantStatus("idle"); setGithubGrantError(null); }}
+                    placeholder="github-username"
+                    className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-1 focus:ring-border"
+                  />
+                  <button
+                    type="button"
+                    disabled={!githubUsername.trim() || githubGrantStatus === "loading"}
+                    onClick={handleGrantGithubAccess}
+                    className="px-3 py-2 bg-foreground text-background text-xs font-bold rounded-lg disabled:opacity-40 cursor-pointer hover:bg-foreground/90 transition-colors whitespace-nowrap"
+                  >
+                    {githubGrantStatus === "loading" ? "Granting…" : "Grant Push Access"}
+                  </button>
+                </div>
+                {githubGrantStatus === "ok" && (
+                  <p className="text-[11px] text-emerald-400">Invite sent to @{githubUsername} — they'll get a GitHub email to accept.</p>
+                )}
+                {githubGrantStatus === "error" && (
+                  <p className="text-[11px] text-red-400">{githubGrantError}</p>
+                )}
+              </div>
+
               {selectedCandidate.started_at && (
                 <button
                   type="button"

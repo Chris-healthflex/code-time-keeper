@@ -405,6 +405,59 @@ export const selectCandidate = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const grantGithubAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ candidateId: z.string().uuid(), githubUsername: z.string().trim().min(1).max(100) }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: candidate } = await supabaseAdmin
+      .from("candidates")
+      .select("assignment_id, assignments(github_repo)")
+      .eq("id", data.candidateId)
+      .single();
+    if (!candidate) throw new Error("Candidate not found");
+
+    const repoUrl = (candidate.assignments as any)?.github_repo as string | undefined;
+    if (!repoUrl) throw new Error("No GitHub repo set on this assignment");
+
+    // Parse owner/repo from URL like https://github.com/owner/repo or https://github.com/owner/repo.git
+    const match = repoUrl.match(/github\.com\/([^/]+)\/([^/.]+)/);
+    if (!match) throw new Error(`Cannot parse repo URL: ${repoUrl}`);
+    const [, owner, repo] = match;
+
+    const token = process.env["GITHUB_TOKEN"];
+    if (!token) throw new Error("GITHUB_TOKEN not configured on server");
+
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/collaborators/${data.githubUsername}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ permission: "push" }),
+    });
+
+    // 201 = invited, 204 = already a collaborator (both are success)
+    if (res.status !== 201 && res.status !== 204) {
+      const body = await res.text();
+      throw new Error(`GitHub API error ${res.status}: ${body}`);
+    }
+
+    await supabaseAdmin.from("audit_logs").insert({
+      candidate_id: data.candidateId,
+      actor: context.userId,
+      event: "github_access_granted",
+      detail: { github_username: data.githubUsername, repo: `${owner}/${repo}` },
+    });
+
+    return { ok: true, invited: res.status === 201 };
+  });
+
 export const toggleUnblurCandidate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ candidateId: z.string().uuid(), unblurred: z.boolean() }).parse(data))
