@@ -41,13 +41,16 @@ async function sendViaGmail(input: MailInput, from: string): Promise<{ sent: boo
   try {
     const accessToken = await getGmailAccessToken();
 
-    // RFC 2047 encode subject so non-ASCII chars (→, etc.) render correctly
-    const encodedSubject = `=?UTF-8?B?${Buffer.from(input.subject).toString("base64")}?=`;
+    // Strip non-ASCII from subject — email subjects must be 7-bit safe
+    const safeSubject = input.subject.replace(/[^\x00-\x7F]/g, (c) => {
+      const map: Record<string, string> = { "→": "->", "←": "<-", "↑": "^", "↓": "v", "…": "...", "’": "'", "“": '"', "”": '"' };
+      return map[c] ?? "-";
+    });
 
     const mime = [
       `From: ${from}`,
       `To: ${input.to}`,
-      `Subject: ${encodedSubject}`,
+      `Subject: ${safeSubject}`,
       `MIME-Version: 1.0`,
       `Content-Type: text/html; charset=UTF-8`,
       ``,
