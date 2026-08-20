@@ -304,14 +304,16 @@ export const inviteAdmin = createServerFn({ method: "POST" })
       .upsert({ email, invited_by: context.userId }, { onConflict: "email" });
     if (invErr) throw new Error(invErr.message);
 
-    // Generate a Supabase magic link so the invitee clicks once and is signed in
+    // Generate an invite link — works for new users who haven't signed up yet
     const origin = process.env["APP_ORIGIN"] ?? "https://ai-assignments.stance.health";
     const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
-      type: "magiclink",
+      type: "invite",
       email,
       options: { redirectTo: `${origin}/auth/callback` },
     });
-    if (linkErr || !linkData?.properties?.action_link) throw new Error(linkErr?.message ?? "Failed to generate magic link");
+    if (linkErr || !linkData?.properties?.action_link) {
+      throw new Error(`invite_link_failed: ${linkErr?.message ?? "no action_link returned"}`);
+    }
 
     const { sendMail, adminInviteMail } = await import("./mailer.server");
     const mail = adminInviteMail({ link: linkData.properties.action_link });

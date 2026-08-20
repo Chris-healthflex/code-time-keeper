@@ -341,6 +341,7 @@ function AdminPage() {
   const [showInviteAdmin, setShowInviteAdmin] = useState(false);
   const [adminInviteEmail, setAdminInviteEmail] = useState("");
   const [adminInviteStatus, setAdminInviteStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [adminInviteError, setAdminInviteError] = useState<string | null>(null);
 
   // Selected candidate for detail view overlay
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateRow | null>(null);
@@ -517,12 +518,14 @@ function AdminPage() {
     e.preventDefault();
     if (!adminInviteEmail.trim()) return;
     setAdminInviteStatus("sending");
+    setAdminInviteError(null);
     try {
       await inviteAdmin({ data: { email: adminInviteEmail.trim() } });
       setAdminInviteStatus("sent");
       setAdminInviteEmail("");
-    } catch {
+    } catch (err) {
       setAdminInviteStatus("error");
+      setAdminInviteError(err instanceof Error ? err.message : "Unknown error");
     }
   }
 
@@ -1243,7 +1246,7 @@ function AdminPage() {
                   className="w-full bg-secondary border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground placeholder:text-foreground/75 focus:outline-none focus:ring-1 focus:ring-foreground/30"
                 />
                 {adminInviteStatus === "error" && (
-                  <p className="text-[12px] text-red-400">Failed to send invite. Please try again.</p>
+                  <p className="text-[12px] text-red-400">{adminInviteError ?? "Failed to send invite. Please try again."}</p>
                 )}
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={() => setShowInviteAdmin(false)} className="px-4 py-2 text-[12.5px] text-foreground/75 hover:text-foreground rounded-lg border border-border hover:bg-secondary/40 cursor-pointer transition-colors">
