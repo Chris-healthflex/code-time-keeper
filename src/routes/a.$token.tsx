@@ -9,6 +9,7 @@ import {
 import { getCandidateBranch } from "@/lib/utils";
 import logoWhite from "@/assets/logo-white.png";
 import { FlipDiskMatrix } from "@/components/ui/flip-disk-matrix";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/a/$token")({
   head: () => ({
@@ -127,73 +128,95 @@ const HIW_STEPS = [
     id: "overview",
     num: "01",
     label: "Overview & Stack",
-    badge: "~10 s read",
+    badge: "~1 min",
     title: "Assessment Brief",
-    tag: "v1.0",
-    meta: "Python · FastAPI · LangGraph · MongoDB · Git",
-    desc: "Turn messy free-text clinician notes into a strictly structured assessment form, saved directly to MongoDB.",
+    tag: "v2.0",
+    meta: "Python · FastAPI · Whisper · LangGraph · MongoDB · Git",
+    desc: "Transcribe a real clinician-patient audio session and extract a fully structured clinical assessment — saved to MongoDB in the exact format our production frontend expects.",
     rows: [
-      { hash: "py3.x", label: "Python + FastAPI backend", chip: "lang" },
-      { hash: "pyd2",  label: "Pydantic for structured output", chip: "lib" },
-      { hash: "lg1",   label: "LangChain or LangGraph agent flow", chip: "ai" },
+      { hash: "py3.x", label: "Python 3.10+ with FastAPI", chip: "lang" },
+      { hash: "wsp",   label: "OpenAI Whisper for audio transcription", chip: "ai" },
+      { hash: "lg1",   label: "LangChain or LangGraph agent for extraction", chip: "ai" },
+      { hash: "pyd2",  label: "Pydantic v2 for strict structured output", chip: "lib" },
       { hash: "mdb6",  label: "MongoDB for persistent storage", chip: "db" },
-      { hash: "git",   label: "Git — version control & submission", chip: "vcs" },
+      { hash: "git",   label: "Git — push to your candidate branch", chip: "vcs" },
     ],
     extra: null,
   },
   {
     id: "pipeline",
     num: "02",
-    label: "Core Pipeline & Schema",
-    badge: "2–4 min",
-    title: "Agent Pipeline",
-    tag: "schema/v1",
-    meta: "LangGraph pipeline · Strict Pydantic · 6 schema sections",
-    desc: "Build an agent that extracts, validates, and flags clinical data — never inventing numbers or facts.",
+    label: "Audio → JSON Pipeline",
+    badge: "Core task",
+    title: "The Pipeline",
+    tag: "pipeline/v2",
+    meta: "WAV input · Whisper · LangGraph · Strict schema",
+    desc: "You are given a WAV file of a real clinician session. Your pipeline must transcribe it, then extract structured clinical data that exactly matches our FirstAssessment schema.",
     rows: [
-      { hash: "p1", label: "Parse the raw clinician note", chip: "step" },
-      { hash: "p2", label: "Map content into multi-section Pydantic schema", chip: "step" },
-      { hash: "p3", label: "Flag missing fields with confidence scores", chip: "step" },
-      { hash: "p4", label: "Never hallucinate numbers or clinical facts", chip: "critical" },
-      { hash: "p5", label: "Produce human-readable extraction summary", chip: "step" },
+      { hash: "s1", label: "Accept WAV file upload via POST /assessments/parse", chip: "step" },
+      { hash: "s2", label: "Transcribe audio using Whisper (local or API)", chip: "step" },
+      { hash: "s3", label: "Run LangGraph agent to extract clinical entities", chip: "step" },
+      { hash: "s4", label: "Map extracted data into the FirstAssessment schema", chip: "step" },
+      { hash: "s5", label: "Flag any fields that could not be confidently extracted", chip: "step" },
+      { hash: "s6", label: "Never hallucinate clinical values, scores, or dates", chip: "critical" },
     ],
-    extra: "6 required schema sections: patient, subjective, objective, assessment, plan, metadata",
+    extra: "The output JSON must exactly match the FirstAssessment schema — no extra fields, no renamed keys.",
+  },
+  {
+    id: "schema",
+    num: "03",
+    label: "Output Schema",
+    badge: "Exact match",
+    title: "FirstAssessment Schema",
+    tag: "schema/v1",
+    meta: "7 sections · Pydantic · Production format",
+    desc: "Your agent output must conform exactly to this schema. This is the live format consumed by Stance Health's clinician frontend.",
+    rows: [
+      { hash: "cd",  label: "clinicalDetails → clinicalHistory, chiefComplaint, duration", chip: "obj" },
+      { hash: "sa",  label: "subjectiveAssessments[] → testName, conclusion", chip: "arr" },
+      { hash: "oa",  label: "objectiveAssessment.tests[] → testName, unitName, value, left, right, comments", chip: "arr" },
+      { hash: "sg",  label: "subjectiveGoals[] → goalDetails, targetDate", chip: "arr" },
+      { hash: "og",  label: "objectiveGoals[] → goalName, goalCategory, unitName, value, targetDate", chip: "arr" },
+      { hash: "rec", label: "recommendation[] → sessionType, sessionFrequency", chip: "arr" },
+      { hash: "pa",  label: "patientAdvice → adviceDetails", chip: "obj" },
+    ],
+    extra: "All array fields must be arrays even if only one item is present. All string fields must be strings, not null.",
   },
   {
     id: "api",
-    num: "03",
+    num: "04",
     label: "API Endpoints & DB",
-    badge: "Instant",
+    badge: "3 endpoints",
     title: "FastAPI + MongoDB",
     tag: "api/v1",
-    meta: "POST · GET · Collections · Error handling",
-    desc: "Three REST endpoints with proper status codes and a MongoDB collection designed for clinical querying.",
+    meta: "POST · GET · WAV upload · Error handling",
+    desc: "Three REST endpoints. The parse endpoint accepts a WAV file and returns the structured JSON. Results are persisted to MongoDB.",
     rows: [
-      { hash: "POST", label: "/assessments/parse — structured object + summary", chip: "EP1" },
-      { hash: "POST", label: "/assessments — save result to MongoDB", chip: "EP2" },
-      { hash: "GET",  label: "/assessments/{id} — retrieve by ID", chip: "EP3" },
-      { hash: "GET",  label: "List endpoint filterable by patient_id", chip: "EP4" },
+      { hash: "EP1", label: "POST /assessments/parse — multipart WAV → FirstAssessment JSON", chip: "main" },
+      { hash: "EP2", label: "POST /assessments — save parsed result to MongoDB", chip: "write" },
+      { hash: "EP3", label: "GET /assessments/{id} — retrieve saved assessment by ID", chip: "read" },
+      { hash: "EP4", label: "GET /assessments — list all, filterable by date", chip: "read" },
     ],
-    extra: "MongoDB collection with patient + date-range querying support",
+    extra: "Return HTTP 422 with field-level error detail if extraction confidence is below threshold.",
   },
   {
     id: "deliverables",
-    num: "04",
-    label: "Intern Deliverables",
+    num: "05",
+    label: "Deliverables",
     badge: "Guarded",
     title: "What to Submit",
     tag: "submit",
-    meta: "Code · Tests · Design doc · 6 items total",
-    desc: "Six deliverables that must be pushed to your candidate branch before the timer expires.",
+    meta: "Code · Tests · README · 6 items",
+    desc: "Push everything to your candidate branch on the ai-assignments repo before the timer expires.",
     rows: [
-      { hash: "D1", label: "Working FastAPI service with all endpoints", chip: "code" },
-      { hash: "D2", label: "LangGraph / LangChain agent code", chip: "code" },
-      { hash: "D3", label: "Pydantic models for the full structured form", chip: "code" },
-      { hash: "D4", label: "MongoDB models & connection code", chip: "code" },
-      { hash: "D5", label: "6–8 synthetic test notes + evaluation script", chip: "tests" },
-      { hash: "D6", label: "1–2 page design document", chip: "docs" },
+      { hash: "D1", label: "FastAPI service — all 4 endpoints working", chip: "code" },
+      { hash: "D2", label: "Whisper transcription module (WAV → text)", chip: "code" },
+      { hash: "D3", label: "LangGraph agent with FirstAssessment Pydantic output", chip: "code" },
+      { hash: "D4", label: "MongoDB models + connection + save/retrieve logic", chip: "code" },
+      { hash: "D5", label: "Test script: run pipeline on provided WAV, print JSON", chip: "tests" },
+      { hash: "D6", label: "README — setup instructions + design decisions", chip: "docs" },
     ],
-    extra: null,
+    extra: "Repo: github.com/Stance-Health/ai-assignments — push to branch named after your email.",
   },
 ];
 
@@ -201,8 +224,11 @@ function InteractiveBrief({ text }: { text: string }) {
   const [active, setActive] = useState(0);
 
   const isStanceHealth =
-    text.toLowerCase().includes("clinical assessment") ||
-    text.toLowerCase().includes("stance health");
+    text.toLowerCase().includes("clinical") ||
+    text.toLowerCase().includes("stance health") ||
+    text.toLowerCase().includes("audio") ||
+    text.toLowerCase().includes("wav") ||
+    text.length < 20; // short placeholder = use interactive brief
 
   if (!isStanceHealth) return <ProblemStatement text={text} />;
 
@@ -213,12 +239,43 @@ function InteractiveBrief({ text }: { text: string }) {
 
       {/* ── Left: massive title + step list ── */}
       <div>
-        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "clamp(32px, 4vw, 52px)", lineHeight: 1.05, letterSpacing: "-0.04em", color: "var(--foreground)" }}>
-          Build a clinical AI pipeline in four supervised steps.
+        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: "clamp(28px, 4vw, 48px)", lineHeight: 1.05, letterSpacing: "-0.04em", color: "var(--foreground)" }}>
+          Turn a clinical audio session into a structured assessment report.
         </h2>
         <p style={{ marginTop: 20, fontSize: 15, color: "var(--muted-foreground)", lineHeight: 1.65, fontWeight: 400 }}>
-          Stance Health runs the same evaluation sequence for every intern: visible problem breakdown, enforced tech stack, and a single scored submission.
+          You are given a WAV recording of a real clinician-patient session. Build the pipeline that transcribes it, extracts the clinical data, and outputs it in the exact JSON schema our production frontend consumes.
         </p>
+
+        {/* WAV download card */}
+        <a
+          href="https://jmdkwtfuagwjloemfthj.supabase.co/storage/v1/object/public/assignment-assets/clinical_assessment.wav"
+          download="clinical_assessment.wav"
+          style={{
+            marginTop: 24,
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "14px 18px",
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            background: "var(--secondary)",
+            textDecoration: "none",
+            transition: "opacity 0.15s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "0.8")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+        >
+          <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 8, background: "var(--background)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--foreground)" }}>
+              <path d="M12 2v13M5 15l7 7 7-7"/><path d="M2 20h20"/>
+            </svg>
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--foreground)", letterSpacing: "-0.01em" }}>clinical_assessment.wav</p>
+            <p style={{ margin: 0, fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>Your input file · 8.9 MB · WAV audio</p>
+          </div>
+          <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Download</span>
+        </a>
 
         <ol style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 2 }}>
           {HIW_STEPS.map((s, idx) => {
@@ -787,7 +844,7 @@ function CandidatePage() {
       .catch(() => toError());
   }, [token]);
 
-  // Polling while in timed phase
+  // Polling fallback while in timed phase (every 30s)
   useEffect(() => {
     if (phase !== "timed") return;
     const poll = setInterval(async () => {
@@ -801,6 +858,28 @@ function CandidatePage() {
     }, 30_000);
     return () => clearInterval(poll);
   }, [phase, token]);
+
+  // Realtime subscription — push admin changes instantly to candidate
+  useEffect(() => {
+    if (phase !== "timed" || !view?.candidateId) return;
+    const channel = supabase
+      .channel(`candidate-${view.candidateId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "candidates", filter: `id=eq.${view.candidateId}` },
+        async () => {
+          try {
+            const cv = await openAssignment({ data: { token } });
+            if (!cv.ok) return toError(cv.reason);
+            setView(cv);
+          } catch {
+            // silent
+          }
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [phase, view?.candidateId, token]);
 
   const handleStart = useCallback(async () => {
     setStarting(true);
