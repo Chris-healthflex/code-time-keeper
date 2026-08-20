@@ -10,6 +10,7 @@ import {
   deleteAssignment,
   listCandidates,
   inviteCandidates,
+  inviteAdmin,
   checkSubmission,
   toggleUnblurCandidate,
   deleteCandidate,
@@ -337,6 +338,9 @@ function AdminPage() {
 
   // Overlay modal for creating assignments
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showInviteAdmin, setShowInviteAdmin] = useState(false);
+  const [adminInviteEmail, setAdminInviteEmail] = useState("");
+  const [adminInviteStatus, setAdminInviteStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   // Selected candidate for detail view overlay
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateRow | null>(null);
@@ -509,6 +513,19 @@ function AdminPage() {
     }
   }
 
+  async function handleInviteAdmin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!adminInviteEmail.trim()) return;
+    setAdminInviteStatus("sending");
+    try {
+      await inviteAdmin({ data: { email: adminInviteEmail.trim() } });
+      setAdminInviteStatus("sent");
+      setAdminInviteEmail("");
+    } catch {
+      setAdminInviteStatus("error");
+    }
+  }
+
   async function handleToggleUnblur(candidateId: string, unblurred: boolean) {
     setBusy(true);
     setError(null);
@@ -636,6 +653,19 @@ function AdminPage() {
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               <span>New Assignment</span>
+            </button>
+
+            <button
+              onClick={() => { setShowInviteAdmin(true); setAdminInviteStatus("idle"); }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12.5px] text-muted-foreground hover:bg-secondary/35 hover:text-foreground transition-colors cursor-pointer"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <line x1="19" y1="8" x2="19" y2="14" />
+                <line x1="22" y1="11" x2="16" y2="11" />
+              </svg>
+              <span>Invite Admin</span>
             </button>
           </div>
 
@@ -1173,6 +1203,58 @@ function AdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Invite Admin Modal ─────────────────────────────────────────────── */}
+      {showInviteAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-[15px] font-bold text-foreground">Invite Admin</h2>
+              <button onClick={() => setShowInviteAdmin(false)} className="text-muted-foreground hover:text-foreground cursor-pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-[12.5px] text-muted-foreground mb-4">
+              Enter the email address of the person you want to invite. They'll receive a sign-in link and automatically get admin access when they click it.
+            </p>
+            {adminInviteStatus === "sent" ? (
+              <div className="flex flex-col items-center gap-3 py-4 text-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <p className="text-[13px] font-medium text-foreground">Invite sent!</p>
+                <p className="text-[12px] text-muted-foreground">They'll receive an email with a sign-in link.</p>
+                <button onClick={() => { setShowInviteAdmin(false); setAdminInviteStatus("idle"); }} className="mt-2 text-sm underline text-muted-foreground hover:text-foreground cursor-pointer">Close</button>
+              </div>
+            ) : (
+              <form onSubmit={handleInviteAdmin} className="space-y-4">
+                <input
+                  type="email"
+                  required
+                  placeholder="colleague@stance.health"
+                  value={adminInviteEmail}
+                  onChange={(e) => setAdminInviteEmail(e.target.value)}
+                  className="w-full bg-secondary border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/30"
+                />
+                {adminInviteStatus === "error" && (
+                  <p className="text-[12px] text-red-400">Failed to send invite. Please try again.</p>
+                )}
+                <div className="flex gap-2 justify-end">
+                  <button type="button" onClick={() => setShowInviteAdmin(false)} className="px-4 py-2 text-[12.5px] text-muted-foreground hover:text-foreground rounded-lg border border-border hover:bg-secondary/40 cursor-pointer transition-colors">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={adminInviteStatus === "sending"} className="bg-foreground hover:bg-foreground/90 disabled:opacity-50 text-background px-5 py-2 text-[12.5px] font-bold rounded-lg cursor-pointer transition-colors">
+                    {adminInviteStatus === "sending" ? "Sending…" : "Send Invite"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

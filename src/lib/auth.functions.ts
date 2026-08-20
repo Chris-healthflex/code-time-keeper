@@ -40,7 +40,23 @@ export const resolveAuthDestination = createServerFn({ method: "POST" })
       return { destination: "admin" as const, path: "/admin/dashboard" };
     }
 
-    // ── 2. Check if this email is an invited candidate ─────────────────────
+    // ── 2. Check if this email has a pending admin invite ─────────────────
+    if (email) {
+      const { data: adminInvite } = await supabaseAdmin
+        .from("admin_invites")
+        .select("id")
+        .eq("email", email)
+        .is("accepted_at", null)
+        .maybeSingle();
+
+      if (adminInvite) {
+        await supabaseAdmin.from("user_roles").upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+        await supabaseAdmin.from("admin_invites").update({ accepted_at: new Date().toISOString() }).eq("id", adminInvite.id);
+        return { destination: "admin" as const, path: "/admin/dashboard" };
+      }
+    }
+
+    // ── 3. Check if this email is an invited candidate ─────────────────────
     if (email) {
       const { data: candidate } = await supabaseAdmin
         .from("candidates")

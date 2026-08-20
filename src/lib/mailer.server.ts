@@ -5,6 +5,7 @@ import {
   timeUpHtml, timeUpText,
   submissionReceivedHtml, submissionReceivedText,
   selectedHtml, selectedText,
+  adminInviteHtml, adminInviteText,
 } from "./mail-templates";
 
 export type MailKind = "invitation" | "magic_link" | "started" | "time_up" | "window_closed" | "submission_received" | "selected";
@@ -150,5 +151,13 @@ export function selectedMail(opts: { name?: string; nextSteps?: string }) {
     subject: "You've been selected — Stance Health",
     html: selectedHtml(opts),
     text: selectedText(opts),
+  };
+}
+
+export function adminInviteMail(opts: { link: string }) {
+  return {
+    subject: "You've been invited as a Stance Health admin",
+    html: adminInviteHtml(opts),
+    text: adminInviteText(opts),
   };
 }

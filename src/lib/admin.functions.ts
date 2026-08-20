@@ -295,14 +295,38 @@ export const inviteAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+
+    const email = data.email.toLowerCase();
+
+    // Record the invite (upsert so re-inviting is safe)
+    const { error: invErr } = await supabaseAdmin
       .from("admin_invites")
-      .upsert({ email: data.email.toLowerCase() }, { onConflict: "email" });
-    if (error) throw new Error(error.message);
+      .upsert({ email, invited_by: context.userId }, { onConflict: "email" });
+    if (invErr) throw new Error(invErr.message);
+
+    // Generate a Supabase magic link so the invitee clicks once and is signed in
+    const origin = process.env["APP_ORIGIN"] ?? "https://ai-assignments.stance.health";
+    const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+      options: { redirectTo: `${origin}/auth/callback` },
+    });
+    if (linkErr || !linkData?.properties?.action_link) throw new Error(linkErr?.message ?? "Failed to generate magic link");
+
+    const { sendMail, adminInviteMail } = await import("./mailer.server");
+    const mail = adminInviteMail({ link: linkData.properties.action_link });
+    await sendMail({
+      kind: "magic_link",
+      to: email,
+      candidateId: "00000000-0000-0000-0000-000000000000",
+      assignmentId: "00000000-0000-0000-0000-000000000000",
+      ...mail,
+    });
+
     await supabaseAdmin.from("audit_logs").insert({
       actor: context.userId,
       event: "admin_invited",
-      detail: { email: data.email.toLowerCase() },
+      detail: { email },
     });
     return { ok: true };
   });

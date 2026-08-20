@@ -273,3 +273,27 @@ ${opts.nextSteps ?? "Someone from our team will be in touch shortly to discuss n
 We look forward to speaking with you,
 Stance Health`;
 }
+
+export function adminInviteHtml(opts: { link: string }) {
+  return shell({
+    preheader: "You've been invited to join the Stance Health hiring admin panel.",
+    badge: "Admin Invite",
+    headline: "You've been invited as an admin",
+    body: [
+      p("You've been added as an admin on the Stance Health Hiring Desk."),
+      p("Click the button below to accept the invitation and sign in. The link is valid for 24 hours."),
+    ].join(""),
+    cta: { label: "Accept Invitation & Sign In", href: opts.link },
+    footer: "This invite was sent by a Stance Health admin. If you weren't expecting this, you can safely ignore it.",
+  });
+}
+
+export function adminInviteText(opts: { link: string }) {
+  return `You've been invited as an admin on the Stance Health Hiring Desk.
+
+Click the link below to accept the invitation and sign in (valid for 24 hours):
+${opts.link}
+
+If you weren't expecting this, you can safely ignore it.
+— Stance Health`;
+}
