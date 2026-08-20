@@ -12,6 +12,7 @@ import {
   inviteCandidates,
   checkSubmission,
   toggleUnblurCandidate,
+  deleteCandidate,
   listAuditLogs,
 } from "@/lib/admin.functions";
 
@@ -390,6 +391,17 @@ function AdminPage() {
       setError(err instanceof Error ? err.message : "Check failed");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleDeleteCandidate(candidateId: string) {
+    if (!confirm("Permanently delete this candidate and all their data? This cannot be undone.")) return;
+    try {
+      await deleteCandidate({ data: { candidateId } });
+      setCandidates((prev) => prev.filter((c) => c.id !== candidateId));
+      setSelectedCandidate(null);
+    } catch (e) {
+      alert("Failed to delete candidate: " + (e as Error).message);
     }
   }
 
@@ -921,6 +933,14 @@ function AdminPage() {
                   Check Branch Push Status
                 </button>
               )}
+
+              <button
+                type="button"
+                onClick={() => handleDeleteCandidate(selectedCandidate.id)}
+                className="w-full py-2.5 rounded-xl text-sm font-bold border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors cursor-pointer text-center"
+              >
+                Delete candidate
+              </button>
             </div>
           </div>
         </div>
