@@ -149,7 +149,7 @@ function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTh
   return (
     <button
       onClick={toggleTheme}
-      className="p-1.5 rounded-lg hover:bg-neutral-800/80 text-neutral-400 hover:text-white transition-colors cursor-pointer border border-neutral-800 bg-neutral-900"
+      className="p-1.5 rounded-lg hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border bg-muted"
       title="Toggle Light/Dark Mode"
       type="button"
     >
@@ -191,16 +191,16 @@ function CalendarWidget() {
   const candidateDeadlineDays = [12, 13, 14, 17, 19, 21, 24];
 
   return (
-    <div className="bg-[#121212] rounded-xl p-4 border border-neutral-800/80">
+    <div className="bg-card rounded-xl p-4 border border-border/80">
       <div className="flex items-center justify-between mb-3.5">
         <h4 className="text-[13px] font-bold text-white">August 2026</h4>
         <div className="flex gap-1.5">
-          <button className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors text-xs">◀</button>
-          <button className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors text-xs">▶</button>
+          <button className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-xs">◀</button>
+          <button className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors text-xs">▶</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-y-2 text-center text-[11px] font-medium text-neutral-500">
+      <div className="grid grid-cols-7 gap-y-2 text-center text-[11px] font-medium text-muted-foreground">
         {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
           <span key={idx} className="h-6 flex items-center justify-center font-semibold text-[10px] tracking-wider">{d}</span>
         ))}
@@ -215,8 +215,8 @@ function CalendarWidget() {
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition-all ${
                   isToday
-                    ? "bg-white text-black shadow-sm scale-110 font-bold"
-                    : "text-neutral-300 hover:bg-neutral-800 hover:text-white cursor-pointer"
+                    ? "bg-card text-foreground shadow-sm scale-110 font-bold"
+                    : "text-foreground/80 hover:bg-secondary hover:text-foreground cursor-pointer"
                 }`}
               >
                 {day}
@@ -451,20 +451,20 @@ function AdminPage() {
 
   if (!ready) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#0d0d0d]">
-        <p className="text-sm text-neutral-400">Loading…</p>
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">Loading…</p>
       </main>
     );
   }
 
   if (!isAdmin) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-6 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
         <h1 className="text-xl font-medium text-white">Admin access required</h1>
-        <p className="mt-2 max-w-sm text-[14px] text-neutral-400">
+        <p className="mt-2 max-w-sm text-[14px] text-muted-foreground">
           Your account does not have the admin role. Ask an existing admin to invite you.
         </p>
-        <button onClick={signOut} className="mt-6 text-sm underline text-neutral-300 hover:text-white cursor-pointer">
+        <button onClick={signOut} className="mt-6 text-sm underline text-foreground/80 hover:text-foreground cursor-pointer">
           Sign out
         </button>
       </main>
@@ -472,31 +472,31 @@ function AdminPage() {
   }
 
   return (
-    <main className="h-screen bg-[#0d0d0d] text-[#e5e5e5] font-sans flex overflow-hidden">
+    <main className="h-screen bg-background text-foreground font-sans flex overflow-hidden">
       
       {/* ========================================================
           COLUMN 1: Left Navigation Sidebar (Replicating Screenshot Left Panel)
          ======================================================== */}
-      <aside className="w-[240px] bg-[#121212] border-r border-neutral-800/80 flex flex-col flex-shrink-0 justify-between select-none">
+      <aside className="w-[240px] bg-card border-r border-border/80 flex flex-col flex-shrink-0 justify-between select-none">
         
         {/* Header Block */}
         <div className="flex flex-col">
-          <div className="flex items-center gap-3 px-4 py-4.5 border-b border-neutral-800/60">
-            <span className="flex h-7 w-7 items-center justify-center rounded bg-neutral-800 text-white font-bold text-[13px] border border-neutral-700/60">S</span>
+          <div className="flex items-center gap-3 px-4 py-4.5 border-b border-border/60">
+            <span className="flex h-7 w-7 items-center justify-center rounded bg-secondary text-white font-bold text-[13px] border border-border/60">S</span>
             <div className="flex flex-col min-w-0">
               <span className="text-[12.5px] font-bold text-white truncate leading-tight">Stance Health</span>
-              <span className="text-[10px] text-neutral-400 tracking-wide font-medium mt-0.5">Hiring Desk</span>
+              <span className="text-[10px] text-muted-foreground tracking-wide font-medium mt-0.5">Hiring Desk</span>
             </div>
           </div>
 
           {/* Section: HIRING */}
           <div className="px-3 py-4 space-y-1">
-            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-neutral-500 mb-2">Hiring</h4>
+            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Hiring</h4>
             
             <button
               onClick={() => { setActiveTab("all"); setSelectedAssignmentId(""); }}
               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[12.5px] transition-colors cursor-pointer ${
-                selectedAssignmentId === "" ? "bg-neutral-800/90 text-white font-semibold" : "text-neutral-400 hover:bg-neutral-800/35 hover:text-white"
+                selectedAssignmentId === "" ? "bg-secondary/90 text-white font-semibold" : "text-muted-foreground hover:bg-secondary/35 hover:text-foreground"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -508,12 +508,12 @@ function AdminPage() {
                 </svg>
                 <span>Active Candidates</span>
               </div>
-              <span className="text-[10.5px] font-bold text-neutral-500">{counts.all}</span>
+              <span className="text-[10.5px] font-bold text-muted-foreground">{counts.all}</span>
             </button>
 
             <button
               onClick={() => { setShowCreateModal(true); }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12.5px] text-neutral-400 hover:bg-neutral-800/35 hover:text-white transition-colors cursor-pointer"
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12.5px] text-muted-foreground hover:bg-secondary/35 hover:text-foreground transition-colors cursor-pointer"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
@@ -525,15 +525,15 @@ function AdminPage() {
 
           {/* Section: ASSIGNMENT TEMPLATES (replaces DESKS section) */}
           <div className="px-3 py-2 space-y-1">
-            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-neutral-500 mb-2">Assignments</h4>
+            <h4 className="px-2 text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Assignments</h4>
             
             {assignments.map((a) => (
               <div
                 key={a.id}
                 className={`group w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-[12.5px] transition-colors ${
                   selectedAssignmentId === a.id
-                    ? "bg-neutral-800/90 text-white font-semibold"
-                    : "text-neutral-400 hover:bg-neutral-800/35 hover:text-white"
+                    ? "bg-secondary/90 text-white font-semibold"
+                    : "text-muted-foreground hover:bg-secondary/35 hover:text-foreground"
                 }`}
               >
                 <button
@@ -552,7 +552,7 @@ function AdminPage() {
                     e.stopPropagation();
                     handleDelete(a.id);
                   }}
-                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-neutral-700 text-neutral-500 hover:text-red-400 transition-all cursor-pointer flex-shrink-0 ml-1.5"
+                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-accent text-muted-foreground hover:text-red-400 transition-all cursor-pointer flex-shrink-0 ml-1.5"
                   title="Delete Assignment"
                   type="button"
                 >
@@ -567,13 +567,13 @@ function AdminPage() {
         </div>
 
         {/* Bottom Profile card */}
-        <div className="p-3 border-t border-neutral-800/60 bg-neutral-900/10">
+        <div className="p-3 border-t border-border/60 bg-muted/10">
           <div className="flex items-center justify-between gap-2.5">
             <div className="flex items-center gap-2.5 min-w-0">
-              <span className="flex h-7 w-7 items-center justify-center rounded bg-white text-black font-bold text-[11px]">CT</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded bg-foreground text-background font-bold text-[11px]">CT</span>
               <div className="flex flex-col min-w-0">
                 <span className="text-[11.5px] font-bold text-white truncate leading-tight">Chris Thomas</span>
-                <span className="text-[9.5px] text-neutral-500 truncate leading-none mt-0.5">Hiring Admin</span>
+                <span className="text-[9.5px] text-muted-foreground truncate leading-none mt-0.5">Hiring Admin</span>
               </div>
             </div>
             <ThemeToggle theme="dark" toggleTheme={toggleTheme} />
@@ -584,11 +584,11 @@ function AdminPage() {
       {/* ========================================================
           COLUMN 2: Center Queue Content (Replicating Screenshot Queue Panel)
          ======================================================== */}
-      <section className="flex-1 bg-[#090909] flex flex-col overflow-hidden">
+      <section className="flex-1 bg-background flex flex-col overflow-hidden">
         
         {/* Header Breadcrumbs Bar */}
-        <header className="px-6 py-4.5 border-b border-neutral-800/80 flex items-center justify-between bg-[#0b0b0b]">
-          <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-neutral-400">
+        <header className="px-6 py-4.5 border-b border-border/80 flex items-center justify-between bg-background">
+          <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-muted-foreground">
             <span>Hiring</span>
             <span className="text-neutral-600 text-[11px]">▶</span>
             <span className="text-white font-semibold">Candidate queue</span>
@@ -598,8 +598,8 @@ function AdminPage() {
             {/* Real-time Activity Logs Toggle */}
             <button
               onClick={() => setShowActivity(!showActivity)}
-              className={`p-1.5 rounded-lg border transition-colors cursor-pointer hover:bg-neutral-800 ${
-                showActivity ? "bg-neutral-800 border-neutral-700 text-white" : "border-neutral-800 text-neutral-500"
+              className={`p-1.5 rounded-lg border transition-colors cursor-pointer hover:bg-secondary ${
+                showActivity ? "bg-secondary border-border text-white" : "border-border text-muted-foreground"
               }`}
               title="Toggle Calendar & Activity Panel"
             >
@@ -611,7 +611,7 @@ function AdminPage() {
             
             <button
               onClick={() => setShowCreateModal(true)}
-              className="bg-white hover:bg-neutral-100 text-black px-3.5 py-1.5 text-[12.5px] font-bold rounded-lg transition-transform hover:scale-102 cursor-pointer shadow-sm"
+              className="bg-foreground hover:bg-foreground/90 text-background px-3.5 py-1.5 text-[12.5px] font-bold rounded-lg transition-transform hover:scale-102 cursor-pointer shadow-sm"
             >
               New assignment
             </button>
@@ -619,8 +619,8 @@ function AdminPage() {
         </header>
 
         {/* Tab switchers + Form */}
-        <div className="px-6 py-4 border-b border-neutral-800/80 bg-[#090909] flex flex-wrap items-center justify-between gap-4">
-          <div className="flex rounded-lg bg-neutral-900/50 p-0.5 border border-neutral-800/60 text-[12px] font-medium">
+        <div className="px-6 py-4 border-b border-border/80 bg-background flex flex-wrap items-center justify-between gap-4">
+          <div className="flex rounded-lg bg-muted/50 p-0.5 border border-border/60 text-[12px] font-medium">
             {[
               { id: "all", label: "All candidates" },
               { id: "in_progress", label: "In progress" },
@@ -631,7 +631,7 @@ function AdminPage() {
                 key={t.id}
                 onClick={() => setActiveTab(t.id as any)}
                 className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
-                  activeTab === t.id ? "bg-white text-black font-semibold shadow-sm" : "text-neutral-400 hover:text-white"
+                  activeTab === t.id ? "bg-card text-foreground font-semibold shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t.label}
@@ -651,12 +651,12 @@ function AdminPage() {
                 value={inviteEmails}
                 onChange={(e) => setInviteEmails(e.target.value)}
                 placeholder="Enter candidate email..."
-                className="w-full rounded-lg border border-neutral-800 bg-neutral-950 px-3 py-1.5 text-xs text-white outline-none focus:border-neutral-700 font-medium"
+                className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-white outline-none focus:border-border font-medium"
               />
               <button
                 type="submit"
                 disabled={busy}
-                className="bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-3 py-1.5 text-xs font-semibold rounded-lg text-white flex-shrink-0 cursor-pointer"
+                className="bg-secondary hover:bg-accent border border-border px-3 py-1.5 text-xs font-semibold rounded-lg text-white flex-shrink-0 cursor-pointer"
               >
                 Invite
               </button>
@@ -674,14 +674,14 @@ function AdminPage() {
 
           {/* Selected Assignment Context Header */}
           {selectedAssignment && (
-            <div className="mb-6 bg-neutral-900/35 border border-neutral-800/80 p-4 rounded-xl flex items-center justify-between">
+            <div className="mb-6 bg-muted/35 border border-border/80 p-4 rounded-xl flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-neutral-500">Active Filter Template:</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Active Filter Template:</span>
                 <h3 className="text-[14px] font-bold text-white mt-0.5">{selectedAssignment.title}</h3>
               </div>
               <button
                 onClick={() => setSelectedAssignmentId("")}
-                className="text-xs text-neutral-400 hover:text-white underline cursor-pointer"
+                className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer"
               >
                 Show All Assignments
               </button>
@@ -689,9 +689,9 @@ function AdminPage() {
           )}
 
           {/* Table Container */}
-          <div className="overflow-hidden rounded-xl border border-neutral-800/60 bg-[#121212]/30 shadow-md">
+          <div className="overflow-hidden rounded-xl border border-border/60 bg-card/30 shadow-md">
             <table className="w-full text-left text-[12.5px] border-collapse">
-              <thead className="border-b border-neutral-800/80 bg-neutral-900/40 text-[10.5px] uppercase tracking-wider text-neutral-400">
+              <thead className="border-b border-border/80 bg-muted/40 text-[10.5px] uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3.5 font-bold">Candidate</th>
                   <th className="px-4 py-3.5 font-bold">Status</th>
@@ -701,7 +701,7 @@ function AdminPage() {
               <tbody className="divide-y divide-neutral-800/40">
                 {filteredCandidates.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-12 text-center text-neutral-500 font-light bg-[#090909]/20">
+                    <td colSpan={3} className="px-4 py-12 text-center text-muted-foreground font-light bg-background/20">
                       No candidates in this queue list.
                     </td>
                   </tr>
@@ -724,32 +724,32 @@ function AdminPage() {
                       <tr
                         key={c.id}
                         onClick={() => setSelectedCandidate(c)}
-                        className={`hover:bg-neutral-800/35 cursor-pointer transition-colors ${
-                          isSelected ? "bg-neutral-800/60" : ""
+                        className={`hover:bg-secondary/35 cursor-pointer transition-colors ${
+                          isSelected ? "bg-secondary/60" : ""
                         }`}
                       >
                         <td className="px-4 py-4">
                           <div className="flex flex-col">
                             <span className="font-bold text-white">{c.email}</span>
-                            <span className="text-[11px] text-neutral-500 truncate mt-0.5 max-w-[280px]">
+                            <span className="text-[11px] text-muted-foreground truncate mt-0.5 max-w-[280px]">
                               {c.assignments?.title ?? "—"}
                             </span>
                           </div>
                         </td>
                         <td className="px-4 py-4">
-                          <div className="flex items-center gap-2 text-neutral-300">
+                          <div className="flex items-center gap-2 text-foreground/80">
                             <span className={`h-1.5 w-1.5 rounded-full ${statusDotColor} ${c.status === "grace" ? "animate-pulse" : ""}`} />
                             <span className="text-[12px] font-semibold">{statusBadge(c)}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-neutral-400 font-medium">
+                        <td className="px-4 py-4 text-muted-foreground font-medium">
                           {c.started_at ? (
                             <div className="flex flex-col">
                               <span>{getRemainingText(c, serverNow)}</span>
-                              <span className="text-[10px] text-neutral-500 mt-0.5">Ends {new Date(c.ends_at!).toLocaleDateString()}</span>
+                              <span className="text-[10px] text-muted-foreground mt-0.5">Ends {new Date(c.ends_at!).toLocaleDateString()}</span>
                             </div>
                           ) : (
-                            <span className="text-neutral-500">Not started yet</span>
+                            <span className="text-muted-foreground">Not started yet</span>
                           )}
                         </td>
                       </tr>
@@ -766,13 +766,13 @@ function AdminPage() {
           COLUMN 3: Context Panel (Replicating Screenshot Schedule & Up Next)
          ======================================================== */}
       {showActivity && (
-        <aside className="w-[300px] bg-[#121212] border-l border-neutral-800/80 flex flex-col flex-shrink-0 select-none animate-in slide-in-from-right duration-200 overflow-hidden">
+        <aside className="w-[300px] bg-card border-l border-border/80 flex flex-col flex-shrink-0 select-none animate-in slide-in-from-right duration-200 overflow-hidden">
           {/* Header */}
-          <div className="p-4 border-b border-neutral-800/60 flex items-center justify-between">
+          <div className="p-4 border-b border-border/60 flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-wider text-white">Schedule</h3>
             <button
               onClick={() => setShowActivity(false)}
-              className="text-neutral-500 hover:text-white cursor-pointer transition-colors text-xs"
+              className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors text-xs"
             >
               ✕
             </button>
@@ -784,11 +784,11 @@ function AdminPage() {
 
             {/* UP NEXT Activities */}
             <div className="space-y-4">
-              <h4 className="text-[9px] font-bold uppercase tracking-wider text-neutral-500">Activity Log</h4>
+              <h4 className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Activity Log</h4>
               
               <div className="space-y-3.5">
                 {auditLogs.length === 0 ? (
-                  <p className="text-[11.5px] text-neutral-500 font-light">No activity recorded yet.</p>
+                  <p className="text-[11.5px] text-muted-foreground font-light">No activity recorded yet.</p>
                 ) : (
                   auditLogs.slice(0, 8).map((log, idx) => {
                     // Extract candidate email
@@ -798,15 +798,15 @@ function AdminPage() {
                     return (
                       <div
                         key={log.id}
-                        className="pl-3.5 border-l-2 border-neutral-800 text-[12px] flex flex-col gap-1 transition-all hover:border-neutral-500"
+                        className="pl-3.5 border-l-2 border-border text-[12px] flex flex-col gap-1 transition-all hover:border-neutral-500"
                       >
-                        <span className="text-[10px] font-semibold text-neutral-500 font-mono">
+                        <span className="text-[10px] font-semibold text-muted-foreground font-mono">
                           {new Date(log.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
                         </span>
                         <span className="font-bold text-white line-clamp-1 leading-tight">
                           {log.event.replace(/_/g, " ").toUpperCase()}
                         </span>
-                        <span className="text-[11px] text-neutral-400 font-light leading-normal truncate">
+                        <span className="text-[11px] text-muted-foreground font-light leading-normal truncate">
                           {candEmail}
                         </span>
                       </div>
@@ -824,36 +824,36 @@ function AdminPage() {
          ======================================================== */}
       {selectedCandidate && (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md h-full bg-[#121212] border-l border-neutral-800/80 p-6 flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-200">
+          <div className="relative w-full max-w-md h-full bg-card border-l border-border/80 p-6 flex flex-col justify-between shadow-2xl animate-in slide-in-from-right duration-200">
             <div className="flex-1 overflow-y-auto scrollbar-thin space-y-6 pr-2">
-              <div className="flex items-center justify-between border-b border-neutral-800/60 pb-4">
+              <div className="flex items-center justify-between border-b border-border/60 pb-4">
                 <div>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-500">Candidate Info</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Candidate Info</span>
                   <h2 className="text-base font-bold text-white mt-1 break-all">{selectedCandidate.email}</h2>
                 </div>
                 <button
                   onClick={() => setSelectedCandidate(null)}
-                  className="text-neutral-500 hover:text-white cursor-pointer text-sm font-semibold"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-semibold"
                 >
                   ✕ Close
                 </button>
               </div>
 
               {/* Status block */}
-              <div className="panel p-4 bg-neutral-950/40 border border-neutral-800/60 rounded-xl space-y-2">
+              <div className="panel p-4 bg-background/40 border border-border/60 rounded-xl space-y-2">
                 <div className="flex justify-between items-center text-[12.5px]">
-                  <span className="text-neutral-500 font-medium">Test Status:</span>
+                  <span className="text-muted-foreground font-medium">Test Status:</span>
                   <span className="font-bold text-white">{statusBadge(selectedCandidate)}</span>
                 </div>
                 {selectedCandidate.started_at && (
                   <>
-                    <div className="flex justify-between items-center text-[12.5px] border-t border-neutral-800/40 pt-2">
-                      <span className="text-neutral-500 font-medium">Timer Status:</span>
+                    <div className="flex justify-between items-center text-[12.5px] border-t border-border/40 pt-2">
+                      <span className="text-muted-foreground font-medium">Timer Status:</span>
                       <span className="font-bold text-white">{getRemainingText(selectedCandidate, serverNow)}</span>
                     </div>
                     <div className="flex justify-between items-center text-[12.5px]">
-                      <span className="text-neutral-500 font-medium">Started At:</span>
-                      <span className="text-neutral-400 font-semibold">{new Date(selectedCandidate.started_at).toLocaleString()}</span>
+                      <span className="text-muted-foreground font-medium">Started At:</span>
+                      <span className="text-muted-foreground font-semibold">{new Date(selectedCandidate.started_at).toLocaleString()}</span>
                     </div>
                   </>
                 )}
@@ -861,16 +861,16 @@ function AdminPage() {
 
               {/* Unique branch details */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500">Git branch details</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Git branch details</h4>
                 
-                <div className="rounded-xl border border-neutral-800 bg-[#0d0d0d] p-4 font-mono text-[12px] text-foreground/90 space-y-3 overflow-x-auto">
+                <div className="rounded-xl border border-border bg-background p-4 font-mono text-[12px] text-foreground/90 space-y-3 overflow-x-auto">
                   <p>
-                    <span className="text-neutral-500"># Repository URL:</span>
+                    <span className="text-muted-foreground"># Repository URL:</span>
                     <br />
-                    <span className="text-neutral-300 font-semibold">{selectedCandidate.assignments?.github_repo || "—"}</span>
+                    <span className="text-foreground/80 font-semibold">{selectedCandidate.assignments?.github_repo || "—"}</span>
                   </p>
                   <p className="border-t border-neutral-900 pt-3">
-                    <span className="text-neutral-500"># Candidate Branch:</span>
+                    <span className="text-muted-foreground"># Candidate Branch:</span>
                     <br />
                     <strong className="text-sky-400 font-bold">{getCandidateBranch(selectedCandidate.email, selectedCandidate.id)}</strong>
                   </p>
@@ -881,7 +881,7 @@ function AdminPage() {
                         href={`${selectedCandidate.assignments.github_repo.replace(/\.git$/, "")}/tree/${getCandidateBranch(selectedCandidate.email, selectedCandidate.id)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] bg-neutral-800 hover:bg-neutral-700 text-white font-sans font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1 cursor-pointer transition-colors"
+                        className="text-[11px] bg-secondary hover:bg-accent text-white font-sans font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1 cursor-pointer transition-colors"
                       >
                         <span>Open branch on GitHub</span>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -897,7 +897,7 @@ function AdminPage() {
             </div>
 
             {/* Bottom Actions inside overlay */}
-            <div className="mt-8 border-t border-neutral-800/60 pt-4 flex flex-col gap-3">
+            <div className="mt-8 border-t border-border/60 pt-4 flex flex-col gap-3">
               {selectedCandidate.started_at && (
                 <button
                   type="button"
@@ -905,7 +905,7 @@ function AdminPage() {
                   className={`w-full py-2.5 rounded-xl text-sm font-bold border transition-colors cursor-pointer text-center ${
                     selectedCandidate.unblurred
                       ? "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20"
-                      : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700"
+                      : "bg-secondary border-border text-foreground/80 hover:bg-accent"
                   }`}
                 >
                   {selectedCandidate.unblurred ? "🔒 Lock GitHub Details (Blur)" : "🔓 Manually Unblur GitHub details"}
@@ -916,7 +916,7 @@ function AdminPage() {
                 <button
                   type="button"
                   onClick={() => handleCheckSubmission(selectedCandidate.id)}
-                  className="w-full bg-white hover:bg-neutral-100 text-black py-2.5 rounded-xl text-sm font-bold text-center cursor-pointer transition-colors"
+                  className="w-full bg-foreground hover:bg-foreground/90 text-background py-2.5 rounded-xl text-sm font-bold text-center cursor-pointer transition-colors"
                 >
                   Check Branch Push Status
                 </button>
@@ -931,21 +931,21 @@ function AdminPage() {
          ======================================================== */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="relative w-full max-w-xl rounded-2xl border border-neutral-800/80 bg-[#121212] p-6 shadow-2xl animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-neutral-800/60 pb-3.5 mb-5">
+          <div className="relative w-full max-w-xl rounded-2xl border border-border/80 bg-card p-6 shadow-2xl animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3.5 mb-5">
               <h2 className="text-[15px] font-bold text-white uppercase tracking-wider">Create Assignment</h2>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="text-neutral-500 hover:text-white cursor-pointer text-sm font-semibold"
+                className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-semibold"
               >
                 ✕ Close
               </button>
             </div>
 
             {/* Template Selector Inside Modal */}
-            <div className="mb-6 rounded-xl border border-neutral-800 bg-[#0c0c0c]/60 p-4">
-              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+            <div className="mb-6 rounded-xl border border-border bg-[#0c0c0c]/60 p-4">
+              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 Quick Load from Template
               </label>
               <select
@@ -961,7 +961,7 @@ function AdminPage() {
                   }
                 }}
                 defaultValue=""
-                className="w-full rounded-lg border border-neutral-800 bg-[#0d0d0d] px-3 py-2.5 text-[12.5px] text-white outline-none focus:border-neutral-700 cursor-pointer"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-[12.5px] text-white outline-none focus:border-border cursor-pointer"
               >
                 <option value="" disabled>-- Select a pre-defined Stance Health template --</option>
                 {TEMPLATES.map((t, i) => (
@@ -972,17 +972,17 @@ function AdminPage() {
 
             <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="mb-1 block text-[11px] font-semibold text-neutral-400">Title</label>
+                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">Title</label>
                 <input
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-800 bg-[#0d0d0d] px-3 py-2 text-sm text-white outline-none focus:border-neutral-700"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-white outline-none focus:border-border"
                   placeholder="Structured Assessment Form Filler"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-[11px] font-semibold text-neutral-400">
+                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">
                   Duration (hours)
                 </label>
                 <input
@@ -993,11 +993,11 @@ function AdminPage() {
                   step={0.25}
                   value={hours}
                   onChange={(e) => setHours(Number(e.target.value))}
-                  className="w-full rounded-lg border border-border bg-[#0d0d0d] px-3 py-2 text-sm text-white outline-none focus:border-neutral-700"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-white outline-none focus:border-border"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-[11px] font-semibold text-neutral-400">
+                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">
                   GitHub repo URL
                 </label>
                 <input
@@ -1005,12 +1005,12 @@ function AdminPage() {
                   type="url"
                   value={repo}
                   onChange={(e) => setRepo(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-[#0d0d0d] px-3 py-2 text-sm text-white outline-none focus:border-neutral-700"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-white outline-none focus:border-border"
                   placeholder="https://github.com/Chris-healthflex/ai-intern.git"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="mb-1 block text-[11px] font-semibold text-neutral-400">
+                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">
                   Problem statement
                 </label>
                 <textarea
@@ -1018,22 +1018,22 @@ function AdminPage() {
                   rows={8}
                   value={problem}
                   onChange={(e) => setProblem(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-[#0d0d0d] px-3 py-2 font-mono text-[12.5px] text-white outline-none focus:border-neutral-700"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-[12.5px] text-white outline-none focus:border-border"
                   placeholder="Paste the full assignment brief here…"
                 />
               </div>
-              <div className="md:col-span-2 flex items-center justify-end gap-3 mt-4 border-t border-neutral-800/60 pt-4">
+              <div className="md:col-span-2 flex items-center justify-end gap-3 mt-4 border-t border-border/60 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-neutral-500 hover:text-white cursor-pointer"
+                  className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={busy}
-                  className="bg-white hover:bg-neutral-100 text-black px-5 py-2.5 text-sm font-bold rounded-lg cursor-pointer transition-colors"
+                  className="bg-foreground hover:bg-foreground/90 text-background px-5 py-2.5 text-sm font-bold rounded-lg cursor-pointer transition-colors"
                 >
                   Create Assignment
                 </button>
