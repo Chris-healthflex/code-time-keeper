@@ -40,36 +40,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-// ─── Shared Theme Toggle Button ───
-
-function ThemeToggle({ theme, toggleTheme }: { theme: "light" | "dark"; toggleTheme: () => void }) {
-  return (
-    <button
-      onClick={toggleTheme}
-      className="p-2 rounded-full hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/40 bg-secondary/10"
-      title="Toggle Light/Dark Mode"
-      type="button"
-    >
-      {theme === "dark" ? (
-        <svg width="16" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <circle cx="12" cy="12" r="5" />
-          <line x1="12" y1="1" x2="12" y2="3" />
-          <line x1="12" y1="21" x2="12" y2="23" />
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-          <line x1="1" y1="12" x2="3" y2="12" />
-          <line x1="21" y1="12" x2="23" y2="12" />
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-        </svg>
-      ) : (
-        <svg width="16" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-      )}
-    </button>
-  );
-}
 
 // ─── Premium, Highly Attractive Problem Statement Canvas ───
 
@@ -400,14 +370,10 @@ function QuestionPage({
   preview,
   onStart,
   starting,
-  theme,
-  toggleTheme,
 }: {
   preview: AssignmentPreview;
   onStart: () => void;
   starting: boolean;
-  theme: "light" | "dark";
-  toggleTheme: () => void;
 }) {
   const [activeStep, setActiveStep] = useState(1);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -419,10 +385,9 @@ function QuestionPage({
     <main className="min-h-screen bg-background flex flex-col">
       <header className="border-b border-border/70 px-6 py-4 bg-card/10 backdrop-blur-md sticky top-0 z-40">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <img src={logoWhite} alt="Stance Health" className="h-7 w-auto transition-all" style={{ filter: theme === 'light' ? 'invert(1)' : 'none' }} />
+          <img src={logoWhite} alt="Stance Health" className="h-7 w-auto invert dark:invert-0" />
           <div className="flex items-center gap-4">
             <span className="text-[12px] text-muted-foreground">{preview.email}</span>
-            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
           </div>
         </div>
       </header>
@@ -603,15 +568,7 @@ function QuestionPage({
 
 // ─── Timed assignment view (after timer starts - with sliding steps!) ───────────────────────────────
 
-function TimedPage({
-  view,
-  theme,
-  toggleTheme,
-}: {
-  view: CandidateView;
-  theme: "light" | "dark";
-  toggleTheme: () => void;
-}) {
+function TimedPage({ view }: { view: CandidateView }) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -650,10 +607,9 @@ function TimedPage({
     <main className="min-h-screen bg-background animate-fade-in">
       <header className="border-b border-border px-6 py-4 bg-card sticky top-0 z-40">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <img src={logoWhite} alt="Stance Health" className="h-6 w-auto transition-all" style={{ filter: theme === 'light' ? 'invert(1)' : 'none' }} />
+          <img src={logoWhite} alt="Stance Health" className="h-6 w-auto invert dark:invert-0" />
           <div className="flex items-center gap-4">
             <span className="text-[12px] text-muted-foreground">{view.email}</span>
-            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
           </div>
         </div>
       </header>
@@ -797,30 +753,6 @@ function CandidatePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
 
-  // Global theme switcher state
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    const initial = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    setTheme(initial);
-    if (initial === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    localStorage.setItem("theme", next);
-    if (next === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
 
   const toError = (reason?: string) => {
     setErrorMsg(
@@ -910,9 +842,9 @@ function CandidatePage() {
   }
 
   if (phase === "question") {
-    return <QuestionPage preview={preview} onStart={handleStart} starting={starting} theme={theme} toggleTheme={toggleTheme} />;
+    return <QuestionPage preview={preview} onStart={handleStart} starting={starting} />;
   }
 
   if (!view) return null;
-  return <TimedPage view={view} theme={theme} toggleTheme={toggleTheme} />;
+  return <TimedPage view={view} />;
 }

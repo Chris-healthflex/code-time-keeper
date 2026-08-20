@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import logoWhite from '@/assets/logo-white.png';
 
-const DEFAULT_HEADLINE = "Fair tests.\nFaster hires.";
+const DEFAULT_HEADLINE = "Your assignment\nawaits.";
 const DEFAULT_SUBTITLE =
-  "Send candidates a tamper-proof timed assignment in seconds. The clock runs server-side — no extensions, no workarounds, no excuses.";
-const DEFAULT_CTA = "Go to dashboard →";
+  "You've been invited to a timed coding challenge. One secure link, one shot — the clock starts the moment you open it.";
+const DEFAULT_CTA = "Open your assignment →";
 
 interface HeroProps {
   headline?: string;
@@ -13,8 +13,6 @@ interface HeroProps {
   ctaText?: string;
   ctaTo?: string;
   onCtaClick?: () => void;
-  /** @deprecated use headline */
-  titleWords?: string[];
 }
 
 export function HeroFuturistic({
@@ -37,13 +35,13 @@ export function HeroFuturistic({
 
   return (
     <div className="relative h-svh overflow-hidden">
-      {/* Stance Health logo — top-left */}
+      {/* Stance Health logo — top-left, larger */}
       <div
         className="absolute top-0 left-0 z-20 p-6 transition-opacity duration-700"
         style={{ opacity: phase === "hidden" ? 0 : 1 }}
       >
         <Link to="/">
-          <img src={logoWhite} alt="Stance Health" className="h-7 w-auto invert dark:invert-0" />
+          <img src={logoWhite} alt="Stance Health" className="h-10 w-auto invert dark:invert-0" />
         </Link>
       </div>
 
@@ -56,12 +54,11 @@ export function HeroFuturistic({
               key={i}
               className="block transition-all duration-700"
               style={{
-                opacity: phase === "hidden" ? 0 : 1,
+                opacity: phase === "hidden" ? 0 : i === 0 ? 1 : 0.75,
                 transform: phase === "hidden" ? "translateY(18px)" : "translateY(0)",
                 transitionDelay: `${i * 80}ms`,
-                color: i === 0
-                  ? "var(--foreground)"
-                  : "color-mix(in oklch, var(--foreground) 38%, transparent)",
+                color: "var(--foreground)",
+                textShadow: "0 2px 32px rgba(0,0,0,0.5)",
               }}
             >
               {line}
@@ -75,7 +72,8 @@ export function HeroFuturistic({
           style={{
             opacity: phase === "sub" || phase === "cta" ? 1 : 0,
             transform: phase === "sub" || phase === "cta" ? "translateY(0)" : "translateY(10px)",
-            color: "color-mix(in oklch, var(--foreground) 60%, transparent)",
+            color: "var(--foreground)",
+            textShadow: "0 1px 12px rgba(0,0,0,0.4)",
           }}
         >
           {subtitle}
