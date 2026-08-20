@@ -442,9 +442,14 @@ function AdminPage() {
         .split(/[\n,;]+/)
         .map((s) => s.trim())
         .filter(Boolean);
-      await inviteCandidates({ data: { assignmentId: selectedAssignmentId, emails } });
+      const result = await inviteCandidates({ data: { assignmentId: selectedAssignmentId, emails } });
       setInviteEmails("");
       await load();
+      // Surface any email failures
+      const failed = result.results.filter((r) => !r.sent);
+      if (failed.length > 0) {
+        setError(`Candidate added but email failed for: ${failed.map((f) => f.email).join(", ")}. Check that RESEND_API_KEY is set in Vercel env vars.`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invite failed");
     } finally {
