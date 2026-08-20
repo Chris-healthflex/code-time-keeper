@@ -126,7 +126,7 @@ function AuthPage() {
 
           <h1 className="text-xl font-semibold tracking-tight text-foreground">Sign in</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            Admin access or your assigned assessment.
+            Sign in with the email your assignment was sent to.
           </p>
 
           <div className="mt-6 space-y-4">
@@ -212,7 +212,7 @@ function AuthPage() {
             </div>
 
             <p className="text-center text-[11px] text-muted-foreground">
-              Candidates: use the link sent to your email, or sign in above with the same address.
+              Use the same email address your assignment invitation was sent to.
             </p>
           </div>
         </div>
