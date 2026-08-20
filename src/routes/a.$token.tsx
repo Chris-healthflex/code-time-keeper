@@ -684,21 +684,23 @@ function TimedPage({
           </div>
 
           {/* Flip disk matrix timer */}
-          <FlipDiskMatrix display={(() => {
-            if (isSubmitted) return "DONE";
-            if (remaining <= 0) return "00:00";
-            const totalSec = Math.floor(remaining / 1000);
-            const hours = Math.floor(totalSec / 3600);
-            const mins = Math.floor((totalSec % 3600) / 60);
-            const secs = totalSec % 60;
-            if (hours > 0) {
-              return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-            }
-            return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-          })()} />
+          <div className="mx-auto max-w-xs sm:max-w-sm">
+            <FlipDiskMatrix display={(() => {
+              if (isSubmitted) return "DONE";
+              if (remaining <= 0) return "00:00";
+              const totalSec = Math.floor(remaining / 1000);
+              const hours = Math.floor(totalSec / 3600);
+              const mins = Math.floor((totalSec % 3600) / 60);
+              const secs = totalSec % 60;
+              if (hours > 0) {
+                return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+              }
+              return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+            })()} />
+          </div>
 
           {!isSubmitted && (
-            <div className="mt-4 h-[3px] w-full rounded-full bg-secondary overflow-hidden">
+            <div className="mt-5 h-2 w-full rounded-full bg-secondary overflow-hidden">
               <div
                 className="h-full rounded-full bg-foreground transition-all duration-1000"
                 style={{ width: `${percentage}%` }}

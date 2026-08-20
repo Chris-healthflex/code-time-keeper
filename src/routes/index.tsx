@@ -1,10 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, type ComponentType } from "react";
 
-// Dynamic import inside useEffect — the ONLY pattern that guarantees the module
-// (and its postprocessing/three deps) is never evaluated during SSR.
-// React.lazy still lets Vite bundle the module into the server entry and evaluate
-// it at load time; useEffect never runs on the server.
+function ClientOnlyBackground() {
+  const [Bg, setBg] = useState<ComponentType | null>(null);
+
+  useEffect(() => {
+    import("@/components/ui/neon-dither").then((m) => {
+      setBg(() => m.PaperDesignBackground as ComponentType);
+    });
+  }, []);
+
+  if (!Bg) return null;
+  return <Bg />;
+}
+
 function ClientOnlyHero() {
   const [Hero, setHero] = useState<ComponentType | null>(null);
 
@@ -14,7 +23,7 @@ function ClientOnlyHero() {
     });
   }, []);
 
-  if (!Hero) return <div className="h-svh bg-black" />;
+  if (!Hero) return <div className="h-svh" />;
   return <Hero />;
 }
 
@@ -41,7 +50,8 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <main className="relative h-svh overflow-hidden bg-black">
+    <main className="relative h-svh overflow-hidden">
+      <ClientOnlyBackground />
       <ClientOnlyHero />
     </main>
   );
