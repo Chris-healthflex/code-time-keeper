@@ -178,28 +178,13 @@
 }
 
 @utility cta-glow {
-  position: relative;
   border-radius: 9999px;
   background: var(--color-primary);
   color: var(--color-primary-foreground);
-  box-shadow: var(--glow-cta);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -3px;
-    border-radius: 9999px;
-    background: var(--gradient-cta);
-    filter: blur(10px);
-    opacity: 0.85;
-    z-index: -1;
-  }
+  transition: opacity 0.15s ease;
 
   &:hover {
-    transform: translateY(-1px);
+    opacity: 0.85;
   }
 }
 
